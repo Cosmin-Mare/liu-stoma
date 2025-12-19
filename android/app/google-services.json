@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "25203293550",
+    "project_id": "liu-stoma",
+    "storage_bucket": "liu-stoma.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:25203293550:android:e3e8bee629fe32980b157f",
+        "android_client_info": {
+          "package_name": "com.example.liu_stoma"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkW5kBQXQU8E7bzos-p98ZsRyZpc1Zlyk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

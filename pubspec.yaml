@@ -1,0 +1,36 @@
+name: liu_stoma
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^4.3.0
+  cloud_firestore: ^6.1.1
+  firebase_storage: ^13.0.5
+  file_picker: ^8.1.4
+  url_launcher: ^6.3.1
+  flutter_localization: ^0.3.3
+  window_manager: ^0.3.7
+  # firebase_core: ^4.3.0
+  # cloud_firestore: ^6.1.1
+  # firedart: ^0.9.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: "Roboto Slab"
+      fonts:
+        - asset: fonts/RobotoSlab-VariableFont_wght.ttf
+  assets:
+    - assets/tooth.png

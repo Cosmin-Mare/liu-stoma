@@ -1,0 +1,59 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "liu-stoma",
+          "appId": "1:25203293550:android:e3e8bee629fe32980b157f",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "liu-stoma",
+          "appId": "1:25203293550:ios:3e5f502f746a954c0b157f",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "liu-stoma",
+          "appId": "1:25203293550:ios:3e5f502f746a954c0b157f",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "liu-stoma",
+          "configurations": {
+            "android": "1:25203293550:android:e3e8bee629fe32980b157f",
+            "ios": "1:25203293550:ios:3e5f502f746a954c0b157f",
+            "macos": "1:25203293550:ios:3e5f502f746a954c0b157f",
+            "web": "1:25203293550:web:f3b5cc909f99e1b40b157f",
+            "windows": "1:25203293550:web:d160f95b83e5af3e0b157f"
+          }
+        }
+      }
+    }
+  },
+  "functions": {
+    "source": "functions",
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run build"
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "pubsub": {
+      "port": 8085
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    }
+  }
+}
