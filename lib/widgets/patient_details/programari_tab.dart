@@ -65,43 +65,87 @@ class ProgramariTab extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.all(24 * scale),
-          child: ElevatedButton.icon(
-            onPressed: () async {
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ProgramareDetailsPage(
-                    programare: null,
-                    patientId: patientId,
-                    scale: scale,
-                    isConsultatie: false,
-                    onNotification: onNotification,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProgramareDetailsPage(
+                        programare: null,
+                        patientId: patientId,
+                        scale: scale,
+                        isConsultatie: false,
+                        onNotification: onNotification,
+                      ),
+                    ),
+                  );
+                  if (result == true) {
+                    onRefresh();
+                  }
+                },
+                icon: Icon(Icons.add_circle_outline, size: 72 * scale),
+                label: Text(
+                  'Adaugă programare',
+                  style: TextStyle(
+                    fontSize: 54 * scale,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              );
-              if (result == true) {
-                onRefresh();
-              }
-            },
-            icon: Icon(Icons.add_circle_outline, size: 72 * scale),
-            label: Text(
-              'Adaugă programare',
-              style: TextStyle(
-                fontSize: 54 * scale,
-                fontWeight: FontWeight.w700,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[600],
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 60 * scale,
+                    vertical: 36 * scale,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(36 * scale),
+                    side: BorderSide(color: Colors.black, width: 6 * scale),
+                  ),
+                ),
               ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: 60 * scale,
-                vertical: 36 * scale,
+              SizedBox(width: 24 * scale),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  final result = await Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProgramareDetailsPage(
+                        programare: null,
+                        patientId: patientId,
+                        scale: scale,
+                        isConsultatie: true,
+                        onNotification: onNotification,
+                      ),
+                    ),
+                  );
+                  if (result == true) {
+                    onRefresh();
+                  }
+                },
+                icon: Icon(Icons.add_circle_outline, size: 72 * scale),
+                label: Text(
+                  'Adaugă extra',
+                  style: TextStyle(
+                    fontSize: 54 * scale,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange[600],
+                  foregroundColor: Colors.white,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 60 * scale,
+                    vertical: 36 * scale,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(36 * scale),
+                    side: BorderSide(color: Colors.black, width: 6 * scale),
+                  ),
+                ),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(36 * scale),
-                side: BorderSide(color: Colors.black, width: 6 * scale),
-              ),
-            ),
+            ],
           ),
         ),
       ],

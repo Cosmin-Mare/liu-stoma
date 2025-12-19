@@ -23,7 +23,7 @@ class PatientModalOverlays extends StatelessWidget {
   final Programare? programareToDelete;
   final List<Programare> expiredProgramari;
   final DateTime? pendingAddDateTime;
-  final String? pendingAddProcedura;
+  final List<Procedura>? pendingAddProceduri;
   final bool? pendingAddNotificare;
   final int? pendingAddDurata;
   final String? pendingAddPatientId;
@@ -35,9 +35,9 @@ class PatientModalOverlays extends StatelessWidget {
   final VoidCallback onCloseHistoryModal;
   final VoidCallback onCloseFilesModal;
   final Function(String) onValidationError;
-  final Function(String, Timestamp, bool, int?) onSaveAddProgramare;
-  final Function(String, Timestamp, bool, int?) onSaveRetroactiveProgramare;
-  final Function(String, Timestamp, bool, int?) onSaveEditProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveAddProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveRetroactiveProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveEditProgramare;
   final Function(Programare) onEditProgramare;
   final Function(Programare) onDeleteProgramare;
   final VoidCallback onCancelDeleteProgramare;
@@ -65,7 +65,7 @@ class PatientModalOverlays extends StatelessWidget {
     this.programareToDelete,
     required this.expiredProgramari,
     this.pendingAddDateTime,
-    this.pendingAddProcedura,
+    this.pendingAddProceduri,
     this.pendingAddNotificare,
     this.pendingAddDurata,
     this.pendingAddPatientId,
@@ -94,7 +94,7 @@ class PatientModalOverlays extends StatelessWidget {
 
   bool _isRetroactive(Programare programare) {
     final isFromHistory = expiredProgramari.any((p) =>
-      p.programareText == programare.programareText &&
+      p.displayText == programare.displayText &&
       p.programareTimestamp == programare.programareTimestamp &&
       p.programareNotification == programare.programareNotification
     );
@@ -170,6 +170,7 @@ class PatientModalOverlays extends StatelessWidget {
           AddProgramareModal(
             scale: scale,
             initialProgramare: programareToEdit,
+            patientId: patientId, // Enable autosave
             isRetroactive: _isRetroactive(programareToEdit!),
             onClose: onCloseEditProgramareModal,
             onValidationError: onValidationError,
@@ -182,12 +183,12 @@ class PatientModalOverlays extends StatelessWidget {
             title: 'Confirmă ștergerea',
             message: () {
               final isConsultatie = expiredProgramari.any((p) =>
-                p.programareText == programareToDelete!.programareText &&
+                p.displayText == programareToDelete!.displayText &&
                 p.programareTimestamp == programareToDelete!.programareTimestamp &&
                 p.programareNotification == programareToDelete!.programareNotification
               );
               return isConsultatie 
-                  ? 'Ești sigură că vrei să ștergi această consultație?' 
+                  ? 'Ești sigură că vrei să ștergi acest extra?' 
                   : 'Ești sigură că vrei să ștergi această programare?';
             }(),
             confirmText: 'Șterge',
@@ -208,4 +209,3 @@ class PatientModalOverlays extends StatelessWidget {
     );
   }
 }
-

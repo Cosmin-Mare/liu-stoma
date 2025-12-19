@@ -109,12 +109,33 @@ class PatientService {
       currentProgramari.removeWhere((item) {
         if (item is Map<String, dynamic>) {
           final itemTimestamp = item['programare_timestamp'] as Timestamp?;
-          final itemText = item['programare_text'] as String?;
           final itemDurata = item['durata'] as int?;
-          return itemTimestamp != null &&
-              itemTimestamp == programare.programareTimestamp &&
-              itemText == programare.programareText &&
-              itemDurata == programare.durata;
+          
+          // Match by timestamp and durata
+          if (itemTimestamp != programare.programareTimestamp) return false;
+          if (itemDurata != programare.durata) return false;
+          
+          // For new format with proceduri
+          if (item['proceduri'] != null) {
+            final itemProceduri = item['proceduri'] as List<dynamic>;
+            if (itemProceduri.length != programare.proceduri.length) return false;
+            // Check if all proceduri match
+            for (int i = 0; i < itemProceduri.length; i++) {
+              final ip = itemProceduri[i] as Map<String, dynamic>;
+              final pp = programare.proceduri[i];
+              if (ip['nume'] != pp.nume || 
+                  (ip['cost'] as num?)?.toDouble() != pp.cost ||
+                  ip['multiplicator'] != pp.multiplicator) {
+                return false;
+              }
+            }
+            return true;
+          }
+          
+          // Legacy format with programare_text
+          final itemText = item['programare_text'] as String?;
+          return itemText == programare.programareText ||
+                 itemText == programare.displayText;
         }
         return false;
       });
@@ -132,18 +153,20 @@ class PatientService {
   static Future<PatientServiceResult<void>> updateProgramare({
     required String patientId,
     required Programare oldProgramare,
-    required String procedura,
+    required List<Procedura> proceduri,
     required Timestamp timestamp,
     required bool notificare,
     int? durata,
+    double? totalOverride,
+    double achitat = 0.0,
   }) async {
     try {
       print('[PatientService] updateProgramare called');
       print('[PatientService] patientId: $patientId');
-      print('[PatientService] oldProgramare.programareText: ${oldProgramare.programareText}');
+      print('[PatientService] oldProgramare.proceduri: ${oldProgramare.proceduri.length} items');
       print('[PatientService] oldProgramare.programareTimestamp: ${oldProgramare.programareTimestamp}');
-      print('[PatientService] oldProgramare.durata: ${oldProgramare.durata} (type: ${oldProgramare.durata.runtimeType})');
-      print('[PatientService] durata parameter: $durata (type: ${durata.runtimeType})');
+      print('[PatientService] oldProgramare.durata: ${oldProgramare.durata}');
+      print('[PatientService] durata parameter: $durata');
       
       final patientRef = FirebaseFirestore.instance
           .collection('patients')
@@ -161,7 +184,6 @@ class PatientService {
       print('[PatientService] Found ${currentProgramari.length} existing programari');
       
       bool found = false;
-      // Normalize old programare durata for comparison (null = 60)
       final oldDurataNormalized = oldProgramare.durata ?? 60;
       print('[PatientService] oldDurataNormalized: $oldDurataNormalized');
       
@@ -169,29 +191,48 @@ class PatientService {
         final item = currentProgramari[i];
         if (item is Map<String, dynamic>) {
           final itemTimestamp = item['programare_timestamp'] as Timestamp?;
-          final itemText = item['programare_text'] as String?;
           final itemDurataRaw = item['durata'];
-          print('[PatientService] Checking item $i: text=$itemText, timestamp=$itemTimestamp, durataRaw=$itemDurataRaw (type: ${itemDurataRaw.runtimeType})');
-          final itemDurata = (itemDurataRaw as int?) ?? 60; // Normalize null to 60 for comparison
-          print('[PatientService] itemDurata normalized: $itemDurata');
+          final itemDurata = (itemDurataRaw as int?) ?? 60;
           
-          final timestampMatch = itemTimestamp == oldProgramare.programareTimestamp;
-          final textMatch = itemText == oldProgramare.programareText;
-          final durataMatch = itemDurata == oldDurataNormalized;
-          print('[PatientService] Matches: timestamp=$timestampMatch, text=$textMatch, durata=$durataMatch');
+          if (itemTimestamp != oldProgramare.programareTimestamp) continue;
+          if (itemDurata != oldDurataNormalized) continue;
           
-          if (itemTimestamp != null &&
-              timestampMatch &&
-              textMatch &&
-              durataMatch) {
+          // Check if this matches the old programare
+          bool matches = false;
+          
+          // New format with proceduri
+          if (item['proceduri'] != null) {
+            final itemProceduri = item['proceduri'] as List<dynamic>;
+            if (itemProceduri.length == oldProgramare.proceduri.length) {
+              matches = true;
+              for (int j = 0; j < itemProceduri.length && matches; j++) {
+                final ip = itemProceduri[j] as Map<String, dynamic>;
+                final pp = oldProgramare.proceduri[j];
+                if (ip['nume'] != pp.nume || 
+                    (ip['cost'] as num?)?.toDouble() != pp.cost ||
+                    ip['multiplicator'] != pp.multiplicator) {
+                  matches = false;
+                }
+              }
+            }
+          } else {
+            // Legacy format
+            final itemText = item['programare_text'] as String?;
+            matches = itemText == oldProgramare.programareText ||
+                     itemText == oldProgramare.displayText;
+          }
+          
+          if (matches) {
             print('[PatientService] Found matching programare at index $i');
             final newDurataValue = durata ?? 60;
             print('[PatientService] Updating with durata: $newDurataValue');
             currentProgramari[i] = {
-              'programare_text': procedura,
+              'proceduri': proceduri.map((p) => p.toMap()).toList(),
               'programare_timestamp': timestamp,
               'programare_notification': notificare,
-              'durata': newDurataValue, // Always store durata, default to 60 minutes
+              'durata': newDurataValue,
+              'total_override': totalOverride,
+              'achitat': achitat,
             };
             found = true;
             break;
@@ -201,7 +242,6 @@ class PatientService {
       
       if (!found) {
         print('[PatientService] ERROR: Programare not found in database');
-        print('[PatientService] Searched for: text=${oldProgramare.programareText}, timestamp=${oldProgramare.programareTimestamp}, durata=$oldDurataNormalized');
         return PatientServiceResult.error('Eroare: Programarea nu a fost găsită');
       }
       
@@ -221,10 +261,12 @@ class PatientService {
 
   static Future<PatientServiceResult<void>> addProgramare({
     required String patientId,
-    required String procedura,
+    required List<Procedura> proceduri,
     required Timestamp timestamp,
     required bool notificare,
     int? durata,
+    double? totalOverride,
+    double achitat = 0.0,
   }) async {
     try {
       final patientRef = FirebaseFirestore.instance
@@ -241,10 +283,12 @@ class PatientService {
       final currentProgramari = patientData['programari'] as List<dynamic>? ?? [];
       
       final newProgramare = {
-        'programare_text': procedura,
+        'proceduri': proceduri.map((p) => p.toMap()).toList(),
         'programare_timestamp': timestamp,
         'programare_notification': notificare,
-        'durata': durata ?? 60, // Always store durata, default to 60 minutes
+        'durata': durata ?? 60,
+        'total_override': totalOverride,
+        'achitat': achitat,
       };
       
       currentProgramari.add(newProgramare);
@@ -377,8 +421,8 @@ class PatientService {
           if (excludePatientId != null && excludeProgramare != null &&
               patientId == excludePatientId &&
               programare.programareTimestamp == excludeProgramare.programareTimestamp &&
-              programare.programareText == excludeProgramare.programareText) {
-            print('[PatientService] Skipping excluded appointment: ${programare.programareText}');
+              programare.displayText == excludeProgramare.displayText) {
+            print('[PatientService] Skipping excluded appointment: ${programare.displayText}');
             continue;
           }
 
@@ -396,14 +440,14 @@ class PatientService {
             final itemStartMinutes = programareDate.hour * 60 + programareDate.minute;
             final itemEndMinutes = itemStartMinutes + (programare.durata ?? 60);
             
-            print('[PatientService] Checking appointment: ${programare.programareText} on same day');
+            print('[PatientService] Checking appointment: ${programare.displayText} on same day');
             print('[PatientService] Existing: $itemStartMinutes - $itemEndMinutes minutes');
             print('[PatientService] New: $newStartMinutes - $newEndMinutes minutes');
 
             // Check for overlap
             if (newStartMinutes < itemEndMinutes && itemStartMinutes < newEndMinutes) {
               print('[PatientService] OVERLAP DETECTED!');
-              print('[PatientService] Overlapping with: ${programare.programareText} from patient $patientId');
+              print('[PatientService] Overlapping with: ${programare.displayText} from patient $patientId');
               return true;
             }
           }
@@ -419,4 +463,3 @@ class PatientService {
     }
   }
 }
-

@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 
+/// A reusable date picker theme helper that provides consistent styling
+/// across the app for date picker dialogs.
 class DatePickerThemeHelper {
-  static Widget buildDatePickerTheme(BuildContext context, double scale, Widget child) {
-    return Theme(
+  /// Builds a themed date picker with custom button styling.
+  /// 
+  /// [context] - Build context for accessing theme
+  /// [scale] - Scale factor for sizing
+  /// [child] - The date picker widget to wrap
+  /// [useButtonWrapper] - If true, uses button wrapper for custom OK/Cancel styling (mobile)
+  static Widget buildDatePickerTheme(
+    BuildContext context, 
+    double scale, 
+    Widget child, {
+    bool useButtonWrapper = false,
+  }) {
+    final themedChild = Theme(
       data: Theme.of(context).copyWith(
         datePickerTheme: DatePickerThemeData(
           shape: RoundedRectangleBorder(
@@ -68,58 +81,46 @@ class DatePickerThemeHelper {
           color: Colors.white,
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.green[600]!),
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28 * scale),
-                side: BorderSide(
-                  color: Colors.black,
-                  width: 6 * scale,
-                ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green[600],
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28 * scale),
+              side: BorderSide(
+                color: Colors.black,
+                width: 6 * scale,
               ),
             ),
-            elevation: MaterialStateProperty.all<double>(0),
-            padding: MaterialStateProperty.all<EdgeInsets>(
-              EdgeInsets.symmetric(
-                horizontal: 40 * scale,
-                vertical: 20 * scale,
-              ),
+            elevation: 0,
+            padding: EdgeInsets.symmetric(
+              horizontal: 32 * scale,
+              vertical: 16 * scale,
             ),
-            textStyle: MaterialStateProperty.all<TextStyle>(
-              TextStyle(
-                fontSize: 32 * scale,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'Roboto Slab',
-              ),
+            textStyle: TextStyle(
+              fontSize: 28 * scale,
+              fontWeight: FontWeight.w900,
+              fontFamily: 'Roboto Slab',
             ),
           ),
         ),
         textButtonTheme: TextButtonThemeData(
-          style: ButtonStyle(
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-              RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28 * scale),
-                side: BorderSide(
-                  color: Colors.black,
-                  width: 6 * scale,
-                ),
+          style: TextButton.styleFrom(
+            foregroundColor: Colors.black,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(28 * scale),
+              side: BorderSide(
+                color: Colors.black,
+                width: 5 * scale,
               ),
             ),
-            padding: MaterialStateProperty.all<EdgeInsets>(
-              EdgeInsets.symmetric(
-                horizontal: 40 * scale,
-                vertical: 20 * scale,
-              ),
+            padding: EdgeInsets.symmetric(
+              horizontal: 24 * scale,
+              vertical: 12 * scale,
             ),
-            textStyle: MaterialStateProperty.all<TextStyle>(
-              TextStyle(
-                fontSize: 32 * scale,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'Roboto Slab',
-              ),
+            textStyle: TextStyle(
+              fontSize: 26 * scale,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Roboto Slab',
             ),
           ),
         ),
@@ -130,15 +131,17 @@ class DatePickerThemeHelper {
           maxWidth: 800 * scale,
           minHeight: 600 * scale,
         ),
-        child: _DatePickerButtonWrapper(
-          scale: scale,
-          child: child,
-        ),
+        child: useButtonWrapper 
+            ? _DatePickerButtonWrapper(scale: scale, child: child)
+            : child,
       ),
     );
+
+    return themedChild;
   }
 }
 
+/// Wrapper that applies custom button styling for mobile date pickers.
 class _DatePickerButtonWrapper extends StatelessWidget {
   final double scale;
   final Widget child;
@@ -150,34 +153,12 @@ class _DatePickerButtonWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Since both buttons are TextButtons and we can't differentiate them via theme,
-    // we need to wrap the date picker and replace buttons individually.
-    // The OK button is typically the last button in the action buttons row.
-    return _ButtonFinder(
-      scale: scale,
-      child: child,
-    );
-  }
-}
-
-class _ButtonFinder extends StatelessWidget {
-  final double scale;
-  final Widget child;
-
-  const _ButtonFinder({
-    required this.scale,
-    required this.child,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return Theme(
       data: Theme.of(context).copyWith(
-        // Don't set backgroundColor on TextButtonTheme - we'll handle it manually
         textButtonTheme: TextButtonThemeData(
           style: ButtonStyle(
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28 * scale),
                 side: BorderSide(
@@ -186,13 +167,13 @@ class _ButtonFinder extends StatelessWidget {
                 ),
               ),
             ),
-            padding: MaterialStateProperty.all<EdgeInsets>(
+            padding: WidgetStateProperty.all<EdgeInsets>(
               EdgeInsets.symmetric(
                 horizontal: 40 * scale,
                 vertical: 20 * scale,
               ),
             ),
-            textStyle: MaterialStateProperty.all<TextStyle>(
+            textStyle: WidgetStateProperty.all<TextStyle>(
               TextStyle(
                 fontSize: 32 * scale,
                 fontWeight: FontWeight.w900,
@@ -201,12 +182,11 @@ class _ButtonFinder extends StatelessWidget {
             ),
           ),
         ),
-        // Style ElevatedButton as green (in case OK button uses it)
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all<Color>(Colors.green[600]!),
-            foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+            backgroundColor: WidgetStateProperty.all<Color>(Colors.green[600]!),
+            foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+            shape: WidgetStateProperty.all<RoundedRectangleBorder>(
               RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28 * scale),
                 side: BorderSide(
@@ -215,14 +195,14 @@ class _ButtonFinder extends StatelessWidget {
                 ),
               ),
             ),
-            elevation: MaterialStateProperty.all<double>(0),
-            padding: MaterialStateProperty.all<EdgeInsets>(
+            elevation: WidgetStateProperty.all<double>(0),
+            padding: WidgetStateProperty.all<EdgeInsets>(
               EdgeInsets.symmetric(
                 horizontal: 40 * scale,
                 vertical: 20 * scale,
               ),
             ),
-            textStyle: MaterialStateProperty.all<TextStyle>(
+            textStyle: WidgetStateProperty.all<TextStyle>(
               TextStyle(
                 fontSize: 32 * scale,
                 fontWeight: FontWeight.w900,
@@ -232,14 +212,12 @@ class _ButtonFinder extends StatelessWidget {
           ),
         ),
       ),
-      child: _ButtonReplacer(
-        scale: scale,
-        child: child,
-      ),
+      child: _ButtonReplacer(scale: scale, child: child),
     );
   }
 }
 
+/// Replaces TextButtons in the date picker with styled versions.
 class _ButtonReplacer extends StatelessWidget {
   final double scale;
   final Widget child;
@@ -256,7 +234,6 @@ class _ButtonReplacer extends StatelessWidget {
 
   Widget _replaceButtons(Widget widget) {
     if (widget is Row) {
-      // Find TextButtons in the Row and replace them
       final children = widget.children;
       final replacedChildren = <Widget>[];
       
@@ -281,23 +258,23 @@ class _ButtonReplacer extends StatelessWidget {
               child: TextButton(
                 onPressed: child.onPressed,
                 style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.transparent),
-                  foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                  overlayColor: MaterialStateProperty.all<Color>(
+                  backgroundColor: WidgetStateProperty.all<Color>(Colors.transparent),
+                  foregroundColor: WidgetStateProperty.all<Color>(Colors.white),
+                  overlayColor: WidgetStateProperty.all<Color>(
                     buttonColor.withOpacity(0.2),
                   ),
-                  shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                  shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                     RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28 * scale),
                     ),
                   ),
-                  padding: MaterialStateProperty.all<EdgeInsets>(
+                  padding: WidgetStateProperty.all<EdgeInsets>(
                     EdgeInsets.symmetric(
                       horizontal: 40 * scale,
                       vertical: 20 * scale,
                     ),
                   ),
-                  textStyle: MaterialStateProperty.all<TextStyle>(
+                  textStyle: WidgetStateProperty.all<TextStyle>(
                     TextStyle(
                       fontSize: 32 * scale,
                       fontWeight: FontWeight.w900,

@@ -44,9 +44,11 @@ class _PacientiPageState extends State<PacientiPage> {
   bool? _notificationIsSuccess;
   bool _showOverlapConfirmation = false;
   DateTime? _pendingAddDateTime;
-  String? _pendingAddProcedura;
+  List<Procedura>? _pendingAddProceduri;
   bool? _pendingAddNotificare;
   int? _pendingAddDurata;
+  double? _pendingAddTotalOverride;
+  double? _pendingAddAchitat;
 
   @override
   void dispose() {
@@ -459,7 +461,7 @@ class _PacientiPageState extends State<PacientiPage> {
                       _notificationIsSuccess = false;
                     });
                   },
-                  onSave: (String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+                  onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
                     if (_longPressPatientId == null) return;
                     
                     // Check for overlaps before saving - check against ALL appointments from ALL patients
@@ -478,9 +480,11 @@ class _PacientiPageState extends State<PacientiPage> {
                     if (hasOverlap) {
                       setState(() {
                         _pendingAddDateTime = newDateTime;
-                        _pendingAddProcedura = procedura;
+                        _pendingAddProceduri = proceduri;
                         _pendingAddNotificare = notificare;
                         _pendingAddDurata = durata;
+                        _pendingAddTotalOverride = totalOverride;
+                        _pendingAddAchitat = achitat;
                         _showOverlapConfirmation = true;
                       });
                       // Modal stays open - will close after user confirms overlap
@@ -488,10 +492,12 @@ class _PacientiPageState extends State<PacientiPage> {
                       // No overlap, save and close immediately
                       final result = await PatientService.addProgramare(
                         patientId: _longPressPatientId!,
-                        procedura: procedura,
+                        proceduri: proceduri,
                         timestamp: timestamp,
                         notificare: notificare,
                         durata: durata,
+                        totalOverride: totalOverride,
+                        achitat: achitat,
                       );
                       
                       if (mounted) {
@@ -520,24 +526,28 @@ class _PacientiPageState extends State<PacientiPage> {
                   scale: scale,
                   onConfirm: () async {
                     if (_pendingAddDateTime != null && 
-                        _pendingAddProcedura != null && 
+                        _pendingAddProceduri != null && 
                         _pendingAddNotificare != null &&
                         _longPressPatientId != null) {
                       final timestamp = Timestamp.fromDate(_pendingAddDateTime!);
                       final result = await PatientService.addProgramare(
                         patientId: _longPressPatientId!,
-                        procedura: _pendingAddProcedura!,
+                        proceduri: _pendingAddProceduri!,
                         timestamp: timestamp,
                         notificare: _pendingAddNotificare!,
                         durata: _pendingAddDurata,
+                        totalOverride: _pendingAddTotalOverride,
+                        achitat: _pendingAddAchitat ?? 0.0,
                       );
 
                       setState(() {
                         _showOverlapConfirmation = false;
                         _pendingAddDateTime = null;
-                        _pendingAddProcedura = null;
+                        _pendingAddProceduri = null;
                         _pendingAddNotificare = null;
                         _pendingAddDurata = null;
+                        _pendingAddTotalOverride = null;
+                        _pendingAddAchitat = null;
                       });
 
                       if (mounted) {
@@ -560,9 +570,11 @@ class _PacientiPageState extends State<PacientiPage> {
                     setState(() {
                       _showOverlapConfirmation = false;
                       _pendingAddDateTime = null;
-                      _pendingAddProcedura = null;
+                      _pendingAddProceduri = null;
                       _pendingAddNotificare = null;
                       _pendingAddDurata = null;
+                      _pendingAddTotalOverride = null;
+                      _pendingAddAchitat = null;
                     });
                   },
                 ),

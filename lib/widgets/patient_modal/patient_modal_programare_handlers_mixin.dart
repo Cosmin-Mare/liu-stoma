@@ -30,14 +30,20 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   DateTime? get pendingAddDateTime;
   set pendingAddDateTime(DateTime? value);
 
-  String? get pendingAddProcedura;
-  set pendingAddProcedura(String? value);
+  List<Procedura>? get pendingAddProceduri;
+  set pendingAddProceduri(List<Procedura>? value);
 
   bool? get pendingAddNotificare;
   set pendingAddNotificare(bool? value);
 
   int? get pendingAddDurata;
   set pendingAddDurata(int? value);
+
+  double? get pendingAddTotalOverride;
+  set pendingAddTotalOverride(double? value);
+
+  double? get pendingAddAchitat;
+  set pendingAddAchitat(double? value);
 
   String? get pendingAddPatientId;
   set pendingAddPatientId(String? value);
@@ -62,7 +68,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     if (patientId == null) return;
 
     final isConsultatie = expiredProgramari.any((p) =>
-        p.programareText == programare.programareText &&
+        p.displayText == programare.displayText &&
         p.programareTimestamp == programare.programareTimestamp &&
         p.programareNotification == programare.programareNotification);
 
@@ -78,7 +84,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     setState(() {
       if (result.success) {
         notificationMessage = isConsultatie
-            ? 'Consultație ștearsă cu succes!'
+            ? 'Extra șters cu succes!'
             : 'Programare ștearsă cu succes!';
         notificationIsSuccess = true;
       } else {
@@ -93,7 +99,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveAddProgramare(
-      String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     final patientId = getEffectivePatientId();
     if (patientId == null) return;
 
@@ -108,19 +114,23 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     if (hasOverlap) {
       setState(() {
         pendingAddDateTime = newDateTime;
-        pendingAddProcedura = procedura;
+        pendingAddProceduri = proceduri;
         pendingAddNotificare = notificare;
         pendingAddDurata = durataValue;
+        pendingAddTotalOverride = totalOverride;
+        pendingAddAchitat = achitat;
         pendingAddPatientId = patientId;
         showOverlapConfirmation = true;
       });
     } else {
       final result = await PatientService.addProgramare(
         patientId: patientId,
-        procedura: procedura,
+        proceduri: proceduri,
         timestamp: timestamp,
         notificare: notificare,
         durata: durataValue,
+        totalOverride: totalOverride,
+        achitat: achitat,
       );
 
       setState(() {
@@ -141,7 +151,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveRetroactiveProgramare(
-      String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     final patientId = getEffectivePatientId();
     if (patientId == null) return;
 
@@ -161,24 +171,28 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     if (hasOverlap) {
       setState(() {
         pendingAddDateTime = newDateTime;
-        pendingAddProcedura = procedura;
+        pendingAddProceduri = proceduri;
         pendingAddNotificare = notificare;
         pendingAddDurata = durataValue;
+        pendingAddTotalOverride = totalOverride;
+        pendingAddAchitat = achitat;
         pendingAddPatientId = patientId;
         showOverlapConfirmation = true;
       });
     } else {
       final result = await PatientService.addProgramare(
         patientId: patientId,
-        procedura: procedura,
+        proceduri: proceduri,
         timestamp: timestamp,
         notificare: notificare,
         durata: durataValue,
+        totalOverride: totalOverride,
+        achitat: achitat,
       );
 
       setState(() {
         if (result.success) {
-          notificationMessage = 'Consultație adăugată cu succes!';
+          notificationMessage = 'Extra adăugat cu succes!';
           notificationIsSuccess = true;
           showRetroactiveProgramareModal = false;
         } else {
@@ -194,10 +208,10 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveEditProgramare(
-      String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     print('[PatientModal] handleSaveEditProgramare called');
     print('[PatientModal] Received durata: $durata (type: ${durata.runtimeType})');
-    print('[PatientModal] programareToEdit: ${programareToEdit?.programareText}');
+    print('[PatientModal] programareToEdit: ${programareToEdit?.displayText}');
     print('[PatientModal] programareToEdit.durata: ${programareToEdit?.durata}');
 
     final programareToEditLocal = programareToEdit;
@@ -242,33 +256,37 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     if (hasOverlap) {
       setState(() {
         pendingAddDateTime = editedDateTime;
-        pendingAddProcedura = procedura;
+        pendingAddProceduri = proceduri;
         pendingAddNotificare = notificare;
         pendingAddDurata = durataValue;
+        pendingAddTotalOverride = totalOverride;
+        pendingAddAchitat = achitat;
         pendingAddPatientId = patientId;
         showOverlapConfirmation = true;
       });
     } else {
       print('[PatientModal] No overlap, calling updateProgramare with durataValue: $durataValue');
       await updateProgramare(
-          programareToEditLocal, procedura, timestamp, notificare, durataValue);
+          programareToEditLocal, proceduri, timestamp, notificare, durataValue, totalOverride, achitat);
     }
   }
 
   Future<void> handleOverlapConfirmation() async {
     print('[PatientModal] handleOverlapConfirmation called');
     print('[PatientModal] pendingAddDurata: $pendingAddDurata');
-    print('[PatientModal] programareToEdit: ${programareToEdit?.programareText}');
+    print('[PatientModal] programareToEdit: ${programareToEdit?.displayText}');
 
     final pendingDateTime = pendingAddDateTime;
-    final pendingProcedura = pendingAddProcedura;
+    final pendingProceduri = pendingAddProceduri;
     final pendingNotificare = pendingAddNotificare;
     final pendingPatientId = pendingAddPatientId;
     final pendingDurata = pendingAddDurata;
+    final pendingTotalOverride = pendingAddTotalOverride;
+    final pendingAchitat = pendingAddAchitat ?? 0.0;
     final programareToEditLocal = programareToEdit;
 
     if (pendingDateTime != null &&
-        pendingProcedura != null &&
+        pendingProceduri != null &&
         pendingNotificare != null &&
         pendingPatientId != null) {
       final timestamp = Timestamp.fromDate(pendingDateTime);
@@ -279,25 +297,29 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
         print('[PatientModal] Updating programare after overlap confirmation');
         await updateProgramare(
           programareToEditLocal,
-          pendingProcedura,
+          pendingProceduri,
           timestamp,
           pendingNotificare,
           durataValue,
+          pendingTotalOverride,
+          pendingAchitat,
         );
       } else {
         print('[PatientModal] Adding new programare after overlap confirmation');
         final result = await PatientService.addProgramare(
           patientId: pendingPatientId,
-          procedura: pendingProcedura,
+          proceduri: pendingProceduri,
           timestamp: timestamp,
           notificare: pendingNotificare,
           durata: durataValue,
+          totalOverride: pendingTotalOverride,
+          achitat: pendingAchitat,
         );
 
         setState(() {
           if (result.success) {
             notificationMessage = showRetroactiveProgramareModal
-                ? 'Consultație adăugată cu succes!'
+                ? 'Extra adăugat cu succes!'
                 : 'Programare adăugată cu succes!';
             notificationIsSuccess = true;
             showAddProgramareModal = false;
@@ -316,9 +338,11 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
       setState(() {
         showOverlapConfirmation = false;
         pendingAddDateTime = null;
-        pendingAddProcedura = null;
+        pendingAddProceduri = null;
         pendingAddNotificare = null;
         pendingAddDurata = null;
+        pendingAddTotalOverride = null;
+        pendingAddAchitat = null;
         pendingAddPatientId = null;
       });
     }
@@ -328,15 +352,17 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     setState(() {
       showOverlapConfirmation = false;
       pendingAddDateTime = null;
-      pendingAddProcedura = null;
+      pendingAddProceduri = null;
       pendingAddNotificare = null;
       pendingAddDurata = null;
+      pendingAddTotalOverride = null;
+      pendingAddAchitat = null;
       pendingAddPatientId = null;
     });
   }
 
-  Future<void> updateProgramare(Programare oldProgramare, String procedura,
-      Timestamp timestamp, bool notificare, int? durata) async {
+  Future<void> updateProgramare(Programare oldProgramare, List<Procedura> proceduri,
+      Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     print('[PatientModal] updateProgramare called');
     print('[PatientModal] oldProgramare.durata: ${oldProgramare.durata}');
     print('[PatientModal] durata parameter: $durata');
@@ -351,10 +377,12 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     final result = await PatientService.updateProgramare(
       patientId: patientId,
       oldProgramare: oldProgramare,
-      procedura: procedura,
+      proceduri: proceduri,
       timestamp: timestamp,
       notificare: notificare,
       durata: durata,
+      totalOverride: totalOverride,
+      achitat: achitat,
     );
     print('[PatientModal] PatientService.updateProgramare result: success=${result.success}');
 
@@ -382,4 +410,3 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
     }
   }
 }
-

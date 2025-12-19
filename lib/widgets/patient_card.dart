@@ -61,6 +61,12 @@ class _PatientCardState extends State<PatientCard> {
       }
     }
 
+    // Calculate total remaining payment across all programari
+    final totalRestDePlata = widget.programari.fold<double>(
+      0.0,
+      (sum, p) => sum + (p.restDePlata > 0 ? p.restDePlata : 0),
+    );
+
     return MouseRegion(
       onEnter: (_) => _setHover(true),
       onExit: (_) => _setHover(false),
@@ -137,10 +143,46 @@ class _PatientCardState extends State<PatientCard> {
                     ],
                   ],
                 ),
+                if (totalRestDePlata > 0) ...[
+                  SizedBox(height: 8 * widget.scale),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10 * widget.scale,
+                      vertical: 4 * widget.scale,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.red[400]!, Colors.red[600]!],
+                      ),
+                      borderRadius: BorderRadius.circular(8 * widget.scale),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.pending,
+                          size: 18 * widget.scale,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 4 * widget.scale),
+                        Text(
+                          'Datorie: ${totalRestDePlata.toStringAsFixed(0)} RON',
+                          style: TextStyle(
+                            fontSize: 20 * widget.scale,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 if (closestFutureProgramare != null) ...[
                   SizedBox(height: 12 * widget.scale),
                   Text(
-                    '${closestFutureProgramare.programareText} - ${widget.formatTimestamp(closestFutureProgramare.programareTimestamp)}',
+                    '${closestFutureProgramare.displayText} - ${widget.formatTimestamp(closestFutureProgramare.programareTimestamp)}',
                     style: TextStyle(
                       fontSize: 28 * widget.scale,
                       fontWeight: FontWeight.w600,

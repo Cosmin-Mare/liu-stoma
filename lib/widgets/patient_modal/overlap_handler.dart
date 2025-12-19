@@ -8,8 +8,8 @@ class OverlapHandler {
     required int? newDurata,
     required String? patientId,
     required Programare? excludeProgramare,
-    required Function(DateTime, String, bool, int?, String?) onOverlapDetected,
-    required Function(String, Timestamp, bool, int?) onNoOverlap,
+    required Function(DateTime, List<Procedura>, bool, int?, double?, double, String?) onOverlapDetected,
+    required Function(List<Procedura>, Timestamp, bool, int?, double?, double) onNoOverlap,
   }) async {
     // Skip overlap check for consultations without dates (epoch date)
     final isDateSkipped = newDateTime.year == 1970 && 
@@ -31,9 +31,11 @@ class OverlapHandler {
     if (hasOverlap) {
       onOverlapDetected(
         newDateTime,
-        '', // procedura will be set by caller
+        [], // proceduri will be set by caller
         false, // notificare will be set by caller
         newDurata,
+        null, // totalOverride will be set by caller
+        0.0, // achitat will be set by caller
         patientId,
       );
       return true;
@@ -44,31 +46,34 @@ class OverlapHandler {
 
   static Future<void> saveAfterOverlapConfirmation({
     required DateTime dateTime,
-    required String procedura,
+    required List<Procedura> proceduri,
     required bool notificare,
     required int? durata,
+    required double? totalOverride,
+    required double achitat,
     required String? patientId,
     required Programare? programareToEdit,
-    required Function(Programare, String, Timestamp, bool, int?) onUpdate,
-    required Function(String, String, Timestamp, bool, int?) onAdd,
+    required Function(Programare, List<Procedura>, Timestamp, bool, int?, double?, double) onUpdate,
+    required Function(String, List<Procedura>, Timestamp, bool, int?, double?, double) onAdd,
     required Function(bool, String) onResult,
   }) async {
     final timestamp = Timestamp.fromDate(dateTime);
     
     if (programareToEdit != null) {
       // Editing existing appointment
-      await onUpdate(programareToEdit, procedura, timestamp, notificare, durata);
+      await onUpdate(programareToEdit, proceduri, timestamp, notificare, durata, totalOverride, achitat);
     } else if (patientId != null) {
       // Adding new appointment
       final result = await PatientService.addProgramare(
         patientId: patientId,
-        procedura: procedura,
+        proceduri: proceduri,
         timestamp: timestamp,
         notificare: notificare,
         durata: durata,
+        totalOverride: totalOverride,
+        achitat: achitat,
       );
       onResult(result.success, result.errorMessage ?? 'Eroare la salvare');
     }
   }
 }
-

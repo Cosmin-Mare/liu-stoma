@@ -70,7 +70,7 @@ class PatientModalBottomButtons extends StatelessWidget {
                 padding: EdgeInsets.symmetric(horizontal: 10 * scale),
                 child: ActionButton(
                   scale: scale,
-                  text: 'Vezi istoricul consultațiilor',
+                  text: 'Istoric',
                   icon: Icons.history,
                   color: Colors.blue[600]!,
                   onTap: onHistory,

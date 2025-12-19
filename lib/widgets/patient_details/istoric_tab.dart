@@ -53,7 +53,7 @@ class IstoricTab extends StatelessWidget {
                       showVerticalBar: false,
                       onEdit: (Programare programare) async {
                         final isConsultatie = expiredProgramari.any((p) =>
-                          p.programareText == programare.programareText &&
+                          p.displayText == programare.displayText &&
                           p.programareTimestamp == programare.programareTimestamp &&
                           p.programareNotification == programare.programareNotification
                         );
@@ -100,7 +100,7 @@ class IstoricTab extends StatelessWidget {
             },
             icon: Icon(Icons.add_circle_outline, size: 72 * scale),
             label: Text(
-              'Adaugă consultație',
+              'Adaugă extra',
               style: TextStyle(
                 fontSize: 54 * scale,
                 fontWeight: FontWeight.w700,

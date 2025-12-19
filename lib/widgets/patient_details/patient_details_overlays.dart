@@ -67,18 +67,22 @@ class PatientDetailsOverlays extends StatefulWidget {
 class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
   bool _showOverlapConfirmation = false;
   DateTime? _pendingAddDateTime;
-  String? _pendingAddProcedura;
+  List<Procedura>? _pendingAddProceduri;
   bool? _pendingAddNotificare;
   int? _pendingAddDurata;
+  double? _pendingAddTotalOverride;
+  double? _pendingAddAchitat;
 
-  Future<void> _updateProgramare(Programare oldProgramare, String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+  Future<void> _updateProgramare(Programare oldProgramare, List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     final result = await PatientService.updateProgramare(
       patientId: widget.patientId,
       oldProgramare: oldProgramare,
-      procedura: procedura,
+      proceduri: proceduri,
       timestamp: timestamp,
       notificare: notificare,
       durata: durata,
+      totalOverride: totalOverride,
+      achitat: achitat,
     );
 
     widget.onSetShowEditProgramareModal(false);
@@ -103,13 +107,13 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
 
     if (result.success) {
       final isConsultatie = widget.expiredProgramari.any((p) =>
-        p.programareText == programare.programareText &&
+        p.displayText == programare.displayText &&
         p.programareTimestamp == programare.programareTimestamp &&
         p.programareNotification == programare.programareNotification
       );
       widget.onNotification(
         isConsultatie 
-            ? 'Consultație ștearsă cu succes!' 
+            ? 'Extra șters cu succes!' 
             : 'Programare ștearsă cu succes!',
         true,
       );
@@ -132,7 +136,7 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
               // Check for overlaps before saving - check against ALL appointments from ALL patients
               final newDateTime = timestamp.toDate();
               // Ensure durata defaults to 60 minutes if null
@@ -151,9 +155,11 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
               if (hasOverlap) {
                 setState(() {
                   _pendingAddDateTime = newDateTime;
-                  _pendingAddProcedura = procedura;
+                  _pendingAddProceduri = proceduri;
                   _pendingAddNotificare = notificare;
                   _pendingAddDurata = durataValue;
+                  _pendingAddTotalOverride = totalOverride;
+                  _pendingAddAchitat = achitat;
                   _showOverlapConfirmation = true;
                 });
                 // Modal stays open - will close after user confirms overlap
@@ -161,10 +167,12 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
                 // No overlap, save and close immediately
                 final result = await PatientService.addProgramare(
                   patientId: widget.patientId,
-                  procedura: procedura,
+                  proceduri: proceduri,
                   timestamp: timestamp,
                   notificare: notificare,
                   durata: durataValue,
+                  totalOverride: totalOverride,
+                  achitat: achitat,
                 );
 
                 if (result.success) {
@@ -186,25 +194,29 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             scale: widget.scale,
             onConfirm: () async {
               if (_pendingAddDateTime != null && 
-                  _pendingAddProcedura != null && 
+                  _pendingAddProceduri != null && 
                   _pendingAddNotificare != null) {
                 final timestamp = Timestamp.fromDate(_pendingAddDateTime!);
                 // Ensure durata defaults to 60 minutes if null
                 final durataValue = _pendingAddDurata ?? 60;
                 final result = await PatientService.addProgramare(
                   patientId: widget.patientId,
-                  procedura: _pendingAddProcedura!,
+                  proceduri: _pendingAddProceduri!,
                   timestamp: timestamp,
                   notificare: _pendingAddNotificare!,
                   durata: durataValue,
+                  totalOverride: _pendingAddTotalOverride,
+                  achitat: _pendingAddAchitat ?? 0.0,
                 );
 
                 setState(() {
                   _showOverlapConfirmation = false;
                   _pendingAddDateTime = null;
-                  _pendingAddProcedura = null;
+                  _pendingAddProceduri = null;
                   _pendingAddNotificare = null;
                   _pendingAddDurata = null;
+                  _pendingAddTotalOverride = null;
+                  _pendingAddAchitat = null;
                 });
 
                 if (result.success) {
@@ -220,9 +232,11 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
               setState(() {
                 _showOverlapConfirmation = false;
                 _pendingAddDateTime = null;
-                _pendingAddProcedura = null;
+                _pendingAddProceduri = null;
                 _pendingAddNotificare = null;
                 _pendingAddDurata = null;
+                _pendingAddTotalOverride = null;
+                _pendingAddAchitat = null;
               });
             },
           ),
@@ -236,17 +250,19 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
               final result = await PatientService.addProgramare(
                 patientId: widget.patientId,
-                procedura: procedura,
+                proceduri: proceduri,
                 timestamp: timestamp,
                 notificare: notificare,
                 durata: durata,
+                totalOverride: totalOverride,
+                achitat: achitat,
               );
 
               if (result.success) {
-                widget.onNotification('Consultație adăugată cu succes!', true);
+                widget.onNotification('Extra adăugat cu succes!', true);
                 widget.onSetShowRetroactiveProgramareModal(false);
               } else {
                 widget.onNotification(result.errorMessage ?? 'Eroare la salvare', false);
@@ -257,9 +273,10 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
           AddProgramareModal(
             scale: widget.scale,
             initialProgramare: widget.programareToEdit,
+            patientId: widget.patientId, // Enable autosave
             isRetroactive: () {
               final isFromHistory = widget.expiredProgramari.any((p) =>
-                p.programareText == widget.programareToEdit!.programareText &&
+                p.displayText == widget.programareToEdit!.displayText &&
                 p.programareTimestamp == widget.programareToEdit!.programareTimestamp &&
                 p.programareNotification == widget.programareToEdit!.programareNotification
               );
@@ -278,10 +295,10 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
               // Ensure durata defaults to 60 minutes if null
               final durataValue = durata ?? 60;
-              await _updateProgramare(widget.programareToEdit!, procedura, timestamp, notificare, durataValue);
+              await _updateProgramare(widget.programareToEdit!, proceduri, timestamp, notificare, durataValue, totalOverride, achitat);
             },
             onDelete: () async {
               await _deleteProgramare(widget.programareToEdit!);
@@ -302,12 +319,12 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             title: 'Confirmă ștergerea',
             message: () {
               final isConsultatie = widget.expiredProgramari.any((p) =>
-                p.programareText == widget.programareToDelete!.programareText &&
+                p.displayText == widget.programareToDelete!.displayText &&
                 p.programareTimestamp == widget.programareToDelete!.programareTimestamp &&
                 p.programareNotification == widget.programareToDelete!.programareNotification
               );
               return isConsultatie 
-                  ? 'Ești sigură că vrei să ștergi această consultație?' 
+                  ? 'Ești sigură că vrei să ștergi acest extra?' 
                   : 'Ești sigură că vrei să ștergi această programare?';
             }(),
             confirmText: 'Șterge',
@@ -347,4 +364,3 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
     );
   }
 }
-

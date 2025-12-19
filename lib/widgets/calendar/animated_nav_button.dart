@@ -1,39 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:liu_stoma/widgets/calendar/calendar_view_mode.dart';
 
-class ViewModeButton extends StatefulWidget {
-  final String label;
-  final CalendarViewMode mode;
-  final CalendarViewMode currentMode;
-  final double scale;
+class AnimatedNavButton extends StatefulWidget {
+  final Widget child;
   final VoidCallback onTap;
+  final double scale;
+  final EdgeInsetsGeometry? padding;
   final bool isMobile;
 
-  const ViewModeButton({
+  const AnimatedNavButton({
     super.key,
-    required this.label,
-    required this.mode,
-    required this.currentMode,
-    required this.scale,
+    required this.child,
     required this.onTap,
+    required this.scale,
+    this.padding,
     this.isMobile = false,
   });
 
   @override
-  State<ViewModeButton> createState() => _ViewModeButtonState();
+  State<AnimatedNavButton> createState() => _AnimatedNavButtonState();
 }
 
-class _ViewModeButtonState extends State<ViewModeButton> {
+class _AnimatedNavButtonState extends State<AnimatedNavButton> {
   bool _isHovered = false;
   bool _isPressed = false;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = widget.currentMode == widget.mode;
-    final baseColor = isSelected ? const Color(0xffB2CEFF) : Colors.white;
-    final hoverColor = isSelected 
-        ? const Color(0xffB2CEFF).withOpacity(0.8) 
-        : Colors.grey[100]!;
+    const baseColor = Colors.white;
+    final hoverColor = Colors.grey[100]!;
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -54,10 +48,7 @@ class _ViewModeButtonState extends State<ViewModeButton> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             curve: Curves.easeOutCubic,
-            padding: EdgeInsets.symmetric(
-              horizontal: widget.isMobile ? 36 * widget.scale : 20 * widget.scale,
-              vertical: widget.isMobile ? 24 * widget.scale : 12 * widget.scale,
-            ),
+            padding: widget.padding ?? EdgeInsets.all(widget.isMobile ? 24 * widget.scale : 12 * widget.scale),
             decoration: BoxDecoration(
               color: _isPressed ? hoverColor : (_isHovered ? hoverColor : baseColor),
               borderRadius: BorderRadius.circular(20 * widget.scale),
@@ -75,14 +66,7 @@ class _ViewModeButtonState extends State<ViewModeButton> {
                     ]
                   : null,
             ),
-            child: Text(
-              widget.label,
-              style: TextStyle(
-                fontSize: widget.isMobile ? 48 * widget.scale : 28 * widget.scale,
-                fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
+            child: widget.child,
           ),
         ),
       ),

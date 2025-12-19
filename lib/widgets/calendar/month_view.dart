@@ -8,6 +8,7 @@ class MonthView extends StatelessWidget {
   final List<String> months;
   final List<String> weekdays;
   final DateTime currentDate;
+  final Function(DateTime day)? onDayTap;
 
   const MonthView({
     super.key,
@@ -17,6 +18,7 @@ class MonthView extends StatelessWidget {
     required this.months,
     required this.weekdays,
     required this.currentDate,
+    this.onDayTap,
   });
 
   List<Map<String, dynamic>> _getProgramariForDay(DateTime day) {
@@ -47,93 +49,171 @@ class MonthView extends StatelessWidget {
             day.day == DateTime.now().day;
         final isCurrentMonth = day.month == currentDate.month;
 
-        return Container(
-          decoration: BoxDecoration(
-            color: isToday ? const Color(0xffB2CEFF).withOpacity(0.3) : Colors.white,
-            borderRadius: BorderRadius.circular(12 * scale),
-            border: Border.all(
-              color: isToday ? Colors.black : Colors.black26,
-              width: isToday ? 4 * scale : 2 * scale,
-            ),
-          ),
-          padding: EdgeInsets.all(8 * scale),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${day.day}',
-                style: TextStyle(
-                  fontSize: 24 * scale,
-                  fontWeight: isToday ? FontWeight.w900 : FontWeight.w700,
-                  color: isCurrentMonth ? Colors.black : Colors.black54,
-                ),
-              ),
-              SizedBox(height: 4 * scale),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: dayProgramari.length > 3 ? 3 : dayProgramari.length,
-                  itemBuilder: (context, idx) {
-                    final item = dayProgramari[idx];
-                    final programare = item['programare'] as Programare;
-                    final programareTime = programare.programareTimestamp.toDate();
-                    final timeStr = '${programareTime.hour.toString().padLeft(2, '0')}:${programareTime.minute.toString().padLeft(2, '0')}';
-                    
-                    return Container(
-                      margin: EdgeInsets.only(bottom: 4 * scale),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6 * scale,
-                        vertical: 4 * scale,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xffB2CEFF),
-                        borderRadius: BorderRadius.circular(6 * scale),
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 2 * scale,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            timeStr,
-                            style: TextStyle(
-                              fontSize: 14 * scale,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            programare.programareText,
-                            style: TextStyle(
-                              fontSize: 16 * scale,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            maxLines: 1,
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              if (dayProgramari.length > 3)
-                Text(
-                  '+${dayProgramari.length - 3}',
-                  style: TextStyle(
-                    fontSize: 18 * scale,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black54,
-                  ),
-                ),
-            ],
-          ),
+        return _AnimatedDayCell(
+          day: day,
+          dayProgramari: dayProgramari,
+          isToday: isToday,
+          isCurrentMonth: isCurrentMonth,
+          scale: scale,
+          onTap: () => onDayTap?.call(day),
         );
       },
     );
   }
 }
 
+class _AnimatedDayCell extends StatefulWidget {
+  final DateTime day;
+  final List<Map<String, dynamic>> dayProgramari;
+  final bool isToday;
+  final bool isCurrentMonth;
+  final double scale;
+  final VoidCallback? onTap;
+
+  const _AnimatedDayCell({
+    required this.day,
+    required this.dayProgramari,
+    required this.isToday,
+    required this.isCurrentMonth,
+    required this.scale,
+    this.onTap,
+  });
+
+  @override
+  State<_AnimatedDayCell> createState() => _AnimatedDayCellState();
+}
+
+class _AnimatedDayCellState extends State<_AnimatedDayCell> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = widget.isToday 
+        ? const Color(0xffB2CEFF).withOpacity(0.3) 
+        : Colors.white;
+    final hoverColor = widget.isToday
+        ? const Color(0xffB2CEFF).withOpacity(0.5)
+        : Colors.grey[100]!;
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTapDown: (_) => setState(() => _isPressed = true),
+        onTapUp: (_) {
+          setState(() => _isPressed = false);
+          widget.onTap?.call();
+        },
+        onTapCancel: () => setState(() => _isPressed = false),
+        child: AnimatedScale(
+          scale: _isPressed ? 0.95 : (_isHovered ? 1.02 : 1.0),
+          duration: Duration(milliseconds: _isPressed ? 80 : 150),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeOutCubic,
+            decoration: BoxDecoration(
+              color: _isPressed ? hoverColor : (_isHovered ? hoverColor : baseColor),
+              borderRadius: BorderRadius.circular(12 * widget.scale),
+              border: Border.all(
+                color: _isHovered || _isPressed 
+                    ? Colors.black 
+                    : (widget.isToday ? Colors.black : Colors.black26),
+                width: (_isHovered || _isPressed || widget.isToday) 
+                    ? 4 * widget.scale 
+                    : 2 * widget.scale,
+              ),
+              boxShadow: _isHovered && !_isPressed
+                  ? [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.12),
+                        blurRadius: 8 * widget.scale,
+                        offset: Offset(0, 4 * widget.scale),
+                      ),
+                    ]
+                  : null,
+            ),
+            padding: EdgeInsets.all(8 * widget.scale),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${widget.day.day}',
+                  style: TextStyle(
+                    fontSize: 24 * widget.scale,
+                    fontWeight: widget.isToday ? FontWeight.w900 : FontWeight.w700,
+                    color: widget.isCurrentMonth ? Colors.black : Colors.black54,
+                  ),
+                ),
+                SizedBox(height: 4 * widget.scale),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: widget.dayProgramari.length > 3 ? 3 : widget.dayProgramari.length,
+                    itemBuilder: (context, idx) {
+                      final item = widget.dayProgramari[idx];
+                      final programare = item['programare'] as Programare;
+                      final programareTime = programare.programareTimestamp.toDate();
+                      final timeStr = '${programareTime.hour.toString().padLeft(2, '0')}:${programareTime.minute.toString().padLeft(2, '0')}';
+                      
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 4 * widget.scale),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 6 * widget.scale,
+                          vertical: 4 * widget.scale,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffB2CEFF),
+                          borderRadius: BorderRadius.circular(6 * widget.scale),
+                          border: Border.all(
+                            color: Colors.black,
+                            width: 2 * widget.scale,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              timeStr,
+                              style: TextStyle(
+                                fontSize: 14 * widget.scale,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              programare.displayText,
+                              style: TextStyle(
+                                fontSize: 16 * widget.scale,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              maxLines: 1,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                if (widget.dayProgramari.length > 3)
+                  Text(
+                    '+${widget.dayProgramari.length - 3}',
+                    style: TextStyle(
+                      fontSize: 18 * widget.scale,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black54,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

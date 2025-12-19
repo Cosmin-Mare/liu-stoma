@@ -20,8 +20,8 @@ class AddProgramareModalHeader extends StatelessWidget {
       children: [
         Text(
           isEditing
-              ? (isRetroactive ? 'Editează consultație' : 'Editează programare')
-              : (isRetroactive ? 'Adaugă consultație' : 'Adaugă programare'),
+              ? (isRetroactive ? 'Editează extra' : 'Editează programare')
+              : (isRetroactive ? 'Adaugă extra' : 'Adaugă programare'),
           style: TextStyle(
             fontSize: 48 * scale,
             fontWeight: FontWeight.w700,

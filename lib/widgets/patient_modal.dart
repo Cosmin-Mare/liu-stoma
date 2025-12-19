@@ -66,9 +66,11 @@ class _PatientModalState extends State<PatientModal>
 
   // Pending overlap confirmation state
   DateTime? _pendingAddDateTime;
-  String? _pendingAddProcedura;
+  List<Procedura>? _pendingAddProceduri;
   bool? _pendingAddNotificare;
   int? _pendingAddDurata;
+  double? _pendingAddTotalOverride;
+  double? _pendingAddAchitat;
   String? _pendingAddPatientId;
 
   // Notification state
@@ -222,9 +224,9 @@ class _PatientModalState extends State<PatientModal>
   set pendingAddDateTime(DateTime? value) => _pendingAddDateTime = value;
 
   @override
-  String? get pendingAddProcedura => _pendingAddProcedura;
+  List<Procedura>? get pendingAddProceduri => _pendingAddProceduri;
   @override
-  set pendingAddProcedura(String? value) => _pendingAddProcedura = value;
+  set pendingAddProceduri(List<Procedura>? value) => _pendingAddProceduri = value;
 
   @override
   bool? get pendingAddNotificare => _pendingAddNotificare;
@@ -235,6 +237,16 @@ class _PatientModalState extends State<PatientModal>
   int? get pendingAddDurata => _pendingAddDurata;
   @override
   set pendingAddDurata(int? value) => _pendingAddDurata = value;
+
+  @override
+  double? get pendingAddTotalOverride => _pendingAddTotalOverride;
+  @override
+  set pendingAddTotalOverride(double? value) => _pendingAddTotalOverride = value;
+
+  @override
+  double? get pendingAddAchitat => _pendingAddAchitat;
+  @override
+  set pendingAddAchitat(double? value) => _pendingAddAchitat = value;
 
   @override
   String? get pendingAddPatientId => _pendingAddPatientId;
@@ -474,6 +486,13 @@ class _PatientModalState extends State<PatientModal>
 
   Widget _buildModalContent(Map<String, dynamic>? patientData,
       List<Programare> activeProgramari, List<Programare> expiredProgramariList) {
+    // Calculate total remaining payment across all programari
+    final allProgramari = [...activeProgramari, ...expiredProgramariList];
+    final totalRestDePlata = allProgramari.fold<double>(
+      0.0,
+      (sum, p) => sum + (p.restDePlata > 0 ? p.restDePlata : 0),
+    );
+
     return Stack(
       children: [
         ModalWrapper(
@@ -489,6 +508,7 @@ class _PatientModalState extends State<PatientModal>
                     ? 'Adaugă pacient'
                     : (widget.patientName ?? _numeController.text),
                 onClose: widget.onClose,
+                totalRestDePlata: isEffectivelyAddMode() ? null : totalRestDePlata,
               ),
               Expanded(
                 child: Padding(
@@ -514,6 +534,11 @@ class _PatientModalState extends State<PatientModal>
                           onAddProgramare: () {
                             setState(() {
                               _showAddProgramareModal = true;
+                            });
+                          },
+                          onAddExtra: () {
+                            setState(() {
+                              _showRetroactiveProgramareModal = true;
                             });
                           },
                         ),
@@ -619,7 +644,7 @@ class _PatientModalState extends State<PatientModal>
           programareToDelete: _programareToDelete,
           expiredProgramari: _expiredProgramari,
           pendingAddDateTime: _pendingAddDateTime,
-          pendingAddProcedura: _pendingAddProcedura,
+          pendingAddProceduri: _pendingAddProceduri,
           pendingAddNotificare: _pendingAddNotificare,
           pendingAddDurata: _pendingAddDurata,
           pendingAddPatientId: _pendingAddPatientId,

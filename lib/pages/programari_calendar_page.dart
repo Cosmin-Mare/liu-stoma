@@ -8,6 +8,7 @@ import 'package:liu_stoma/widgets/calendar/calendar_view_mode.dart';
 import 'package:liu_stoma/widgets/calendar/view_mode_button.dart';
 import 'package:liu_stoma/widgets/calendar/time_grid_view.dart';
 import 'package:liu_stoma/widgets/calendar/month_view.dart';
+import 'package:liu_stoma/widgets/calendar/animated_nav_button.dart';
 import 'package:liu_stoma/models/programare.dart';
 import 'package:liu_stoma/widgets/add_programare_modal.dart';
 import 'package:liu_stoma/services/patient_service.dart';
@@ -35,9 +36,11 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
   bool? _notificationIsSuccess;
   bool _showOverlapConfirmation = false;
   DateTime? _pendingEditDateTime;
-  String? _pendingEditProcedura;
+  List<Procedura>? _pendingEditProceduri;
   bool? _pendingEditNotificare;
   int? _pendingEditDurata;
+  double? _pendingEditTotalOverride;
+  double? _pendingEditAchitat;
   final GlobalKey<TimeGridViewState> _timeGridViewKey = GlobalKey<TimeGridViewState>();
 
   @override
@@ -58,6 +61,22 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
       _currentPageIndex = 1000; // Reset to middle
       _currentDate = DateTime.now();
       _pageController?.jumpToPage(_currentPageIndex);
+    });
+  }
+
+  void _navigateToDayView(DateTime day) {
+    // Calculate the page index for the target day in day view mode
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    final dayOnly = DateTime(day.year, day.month, day.day);
+    final offset = dayOnly.difference(todayOnly).inDays;
+    final targetPageIndex = 1000 + offset;
+    
+    setState(() {
+      _viewMode = CalendarViewMode.day;
+      _currentPageIndex = targetPageIndex;
+      _currentDate = day;
+      _pageController?.jumpToPage(targetPageIndex);
     });
   }
 
@@ -239,59 +258,35 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                               isMobile: true,
                             ),
                             const Spacer(),
-                            GestureDetector(
+                            AnimatedNavButton(
                               onTap: () {
                                 _pageController?.previousPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                 );
                               },
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Container(
-                                  padding: EdgeInsets.all(24 * scale),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20 * scale),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4 * scale,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.chevron_left,
-                                    size: 50 * scale,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                              scale: scale,
+                              isMobile: true,
+                              child: Icon(
+                                Icons.chevron_left,
+                                size: 50 * scale,
+                                color: Colors.black,
                               ),
                             ),
                             SizedBox(width: 12 * scale),
-                            GestureDetector(
+                            AnimatedNavButton(
                               onTap: () {
                                 _pageController?.nextPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                 );
                               },
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Container(
-                                  padding: EdgeInsets.all(24 * scale),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20 * scale),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4 * scale,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.chevron_right,
-                                    size: 50 * scale,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                              scale: scale,
+                              isMobile: true,
+                              child: Icon(
+                                Icons.chevron_right,
+                                size: 50 * scale,
+                                color: Colors.black,
                               ),
                             ),
                           ],
@@ -338,35 +333,22 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                             ),
                             const Spacer(),
                             // Navigation buttons
-                            GestureDetector(
+                            AnimatedNavButton(
                               onTap: () {
                                 _pageController?.previousPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                 );
                               },
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Container(
-                                  padding: EdgeInsets.all(12 * scale),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20 * scale),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4 * scale,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.chevron_left,
-                                    size: 32 * scale,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                              scale: scale,
+                              child: Icon(
+                                Icons.chevron_left,
+                                size: 32 * scale,
+                                color: Colors.black,
                               ),
                             ),
                             SizedBox(width: 12 * scale),
-                            GestureDetector(
+                            AnimatedNavButton(
                               onTap: () {
                                 setState(() {
                                   _currentPageIndex = 1000;
@@ -374,58 +356,33 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                                 });
                                 _pageController?.jumpToPage(1000);
                               },
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20 * scale,
-                                    vertical: 12 * scale,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20 * scale),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4 * scale,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    _getTopRightText(),
-                                    style: TextStyle(
-                                      fontSize: 28 * scale,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+                              scale: scale,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 20 * scale,
+                                vertical: 12 * scale,
+                              ),
+                              child: Text(
+                                _getTopRightText(),
+                                style: TextStyle(
+                                  fontSize: 28 * scale,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.black,
                                 ),
                               ),
                             ),
                             SizedBox(width: 12 * scale),
-                            GestureDetector(
+                            AnimatedNavButton(
                               onTap: () {
                                 _pageController?.nextPage(
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.easeInOut,
                                 );
                               },
-                              child: MouseRegion(
-                                cursor: SystemMouseCursors.click,
-                                child: Container(
-                                  padding: EdgeInsets.all(12 * scale),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(20 * scale),
-                                    border: Border.all(
-                                      color: Colors.black,
-                                      width: 4 * scale,
-                                    ),
-                                  ),
-                                  child: Icon(
-                                    Icons.chevron_right,
-                                    size: 32 * scale,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                              scale: scale,
+                              child: Icon(
+                                Icons.chevron_right,
+                                size: 32 * scale,
+                                color: Colors.black,
                               ),
                             ),
                           ],
@@ -454,6 +411,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                                     months: months,
                                     weekdays: weekdays,
                                     currentDate: pageDate,
+                                    onDayTap: _navigateToDayView,
                                   )
                                 : TimeGridView(
                                     key: isCurrentPage ? _timeGridViewKey : null,
@@ -477,6 +435,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                       AddProgramareModal(
                         scale: scale,
                         initialProgramare: _programareToEdit,
+                        patientId: _patientIdForEdit, // Enable autosave
                         patientName: _patientNameForEdit,
                         shouldCloseAfterSave: false, // Don't auto-close, we'll close it after overlap confirmation
                         isRetroactive: () {
@@ -508,7 +467,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                             _notificationIsSuccess = false;
                           });
                         },
-                        onSave: (String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+                        onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
                           // Check for overlaps before saving - check against ALL appointments from ALL patients
                           final editedDateTime = timestamp.toDate();
                           // Ensure durata defaults to 60 minutes if null
@@ -530,15 +489,17 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                           if (hasOverlap) {
                             setState(() {
                               _pendingEditDateTime = editedDateTime;
-                              _pendingEditProcedura = procedura;
+                              _pendingEditProceduri = proceduri;
                               _pendingEditNotificare = notificare;
                               _pendingEditDurata = durataValue;
+                              _pendingEditTotalOverride = totalOverride;
+                              _pendingEditAchitat = achitat;
                               _showOverlapConfirmation = true;
                             });
                             // Modal stays open - will close after user confirms overlap
                           } else {
                             // No overlap, save and close immediately
-                            await _updateProgramare(_programareToEdit!, procedura, timestamp, notificare, durataValue);
+                            await _updateProgramare(_programareToEdit!, proceduri, timestamp, notificare, durataValue, totalOverride, achitat);
                           }
                         },
                         onDelete: () async {
@@ -557,7 +518,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                         scale: scale,
                         onConfirm: () async {
                           if (_pendingEditDateTime != null && 
-                              _pendingEditProcedura != null && 
+                              _pendingEditProceduri != null && 
                               _pendingEditNotificare != null &&
                               _programareToEdit != null) {
                             final timestamp = Timestamp.fromDate(_pendingEditDateTime!);
@@ -565,18 +526,22 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                             final durataValue = _pendingEditDurata ?? 60;
                             await _updateProgramare(
                               _programareToEdit!,
-                              _pendingEditProcedura!,
+                              _pendingEditProceduri!,
                               timestamp,
                               _pendingEditNotificare!,
                               durataValue,
+                              _pendingEditTotalOverride,
+                              _pendingEditAchitat ?? 0.0,
                             );
                           }
                           setState(() {
                             _showOverlapConfirmation = false;
                             _pendingEditDateTime = null;
-                            _pendingEditProcedura = null;
+                            _pendingEditProceduri = null;
                             _pendingEditNotificare = null;
                             _pendingEditDurata = null;
+                            _pendingEditTotalOverride = null;
+                            _pendingEditAchitat = null;
                           });
                         },
                         onCancel: () {
@@ -584,9 +549,11 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                           setState(() {
                             _showOverlapConfirmation = false;
                             _pendingEditDateTime = null;
-                            _pendingEditProcedura = null;
+                            _pendingEditProceduri = null;
                             _pendingEditNotificare = null;
                             _pendingEditDurata = null;
+                            _pendingEditTotalOverride = null;
+                            _pendingEditAchitat = null;
                           });
                         },
                       ),
@@ -674,7 +641,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
       if (excludePatientId != null && excludeProgramare != null &&
           itemPatientId == excludePatientId && 
           programare.programareTimestamp == excludeProgramare.programareTimestamp &&
-          programare.programareText == excludeProgramare.programareText) {
+          programare.displayText == excludeProgramare.displayText) {
         continue;
       }
 
@@ -697,16 +664,18 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
     return false;
   }
 
-  Future<void> _updateProgramare(Programare oldProgramare, String procedura, Timestamp timestamp, bool notificare, int? durata) async {
+  Future<void> _updateProgramare(Programare oldProgramare, List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
     if (_patientIdForEdit == null) return;
     
     final result = await PatientService.updateProgramare(
       patientId: _patientIdForEdit!,
       oldProgramare: oldProgramare,
-      procedura: procedura,
+      proceduri: proceduri,
       timestamp: timestamp,
       notificare: notificare,
       durata: durata,
+      totalOverride: totalOverride,
+      achitat: achitat,
     );
     
     final editedDateTime = timestamp.toDate();

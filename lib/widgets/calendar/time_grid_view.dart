@@ -62,7 +62,7 @@ class TimeGridViewState extends State<TimeGridView> {
   void _scrollToDefault({bool updateFlag = true}) {
     if (_scrollController.hasClients) {
       final hourHeight = widget.isMobile ? 140.0 : 80.0;
-      const defaultScrollHour = 8;
+      const defaultScrollHour = 0;
       final scrollOffset = defaultScrollHour * hourHeight * widget.scale;
       _scrollController.jumpTo(scrollOffset);
       if (updateFlag) {
@@ -76,7 +76,7 @@ class TimeGridViewState extends State<TimeGridView> {
   void scrollToTime(DateTime time) {
     if (_scrollController.hasClients) {
       final hourHeight = widget.isMobile ? 140.0 : 80.0;
-      const startHour = 0;
+      const startHour = 9;
       final hours = time.hour + time.minute / 60.0;
       final scrollOffset = (hours - startHour) * hourHeight * widget.scale;
       // Scroll to slightly before the time to show some context
@@ -219,8 +219,8 @@ class TimeGridViewState extends State<TimeGridView> {
 
   @override
   Widget build(BuildContext context) {
-    const startHour = 0;
-    const endHour = 24;
+    const startHour = 9;
+    const endHour = 20;
     final hourHeight = widget.isMobile ? 200.0 : 80.0;
     final halfHourHeight = hourHeight / 2;
     final totalHeight = (endHour - startHour) * hourHeight * widget.scale;
@@ -402,7 +402,7 @@ class TimeGridViewState extends State<TimeGridView> {
                                             final height = _getDurationHeight(programare.durata, hourHeight * widget.scale);
                                             final leftOffset = 4 * widget.scale + (eventWidth + spacing) * i;
                                             final eventColor = _getEventColor(i, groupSize);
-                                            final programareKey = '${programare.programareTimestamp}_${programare.programareText}_${item['patientId']}';
+                                            final programareKey = '${programare.programareTimestamp}_${programare.displayText}_${item['patientId']}';
                                             final isHovered = _hoveredProgramari.contains(programareKey);
 
                                             eventWidgets.add(
@@ -483,7 +483,7 @@ class TimeGridViewState extends State<TimeGridView> {
                                                           SizedBox(width: 8 * widget.scale),
                                                           Flexible(
                                                             child: Text(
-                                                              programare.programareText,
+                                                              programare.displayText,
                                                               style: TextStyle(
                                                                 fontSize: widget.isMobile ? 26 * widget.scale : 16 * widget.scale,
                                                                 fontWeight: FontWeight.w600,
@@ -516,7 +516,7 @@ class TimeGridViewState extends State<TimeGridView> {
                                                         SizedBox(height: 4 * widget.scale),
                                                         Flexible(
                                                           child: Text(
-                                                            programare.programareText,
+                                                            programare.displayText,
                                                             style: TextStyle(
                                                               fontSize: widget.isMobile 
                                                                   ? (isShort ? 28 * widget.scale : 34 * widget.scale)

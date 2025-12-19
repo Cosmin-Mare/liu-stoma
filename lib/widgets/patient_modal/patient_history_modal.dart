@@ -168,7 +168,7 @@ class _PatientHistoryModalState extends State<PatientHistoryModal> {
                                         ),
                                         SizedBox(width: 16 * widget.scale),
                                         Text(
-                                          'Adaugă consultație',
+                                          'Adaugă extra',
                                           style: TextStyle(
                                             fontSize: 32 * widget.scale,
                                             fontWeight: FontWeight.w900,
