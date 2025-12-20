@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DatePickerButton extends StatelessWidget {
@@ -195,6 +196,116 @@ class TimePickerButton extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       color: Colors.black,
                     ),
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_drop_down,
+                  size: 32 * scale,
+                  color: Colors.black,
+                  weight: 900,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PatientPickerButton extends StatelessWidget {
+  final String patientId;
+  final double scale;
+  final VoidCallback onTap;
+  final bool isHovering;
+  final bool isPressed;
+  final VoidCallback onHoverEnter;
+  final VoidCallback onHoverExit;
+  final VoidCallback onTapDown;
+  final VoidCallback onTapUp;
+  final VoidCallback onTapCancel;
+
+  const PatientPickerButton({
+    super.key,
+    required this.patientId,
+    required this.scale,
+    required this.onTap,
+    required this.isHovering,
+    required this.isPressed,
+    required this.onHoverEnter,
+    required this.onHoverExit,
+    required this.onTapDown,
+    required this.onTapUp,
+    required this.onTapCancel,
+  });
+
+  Future<String> _formatPatientName(String patientId) async {
+    if (patientId.isEmpty) return 'Selectează un pacient';
+    return await FirebaseFirestore.instance.collection('patients').doc(patientId).get().then((DocumentSnapshot<Map<String, dynamic>> value) => value.data()?['nume'] ?? '');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => onHoverEnter(),
+      onExit: (_) => onHoverExit(),
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTapDown: (_) => onTapDown(),
+        onTapUp: (_) {
+          onTapUp();
+          onTap();
+        },
+        onTapCancel: onTapCancel,
+        child: AnimatedScale(
+          scale: isPressed ? 0.97 : (isHovering ? 1.02 : 1.0),
+          alignment: Alignment.center,
+          duration: const Duration(milliseconds: 160),
+          curve: Curves.easeOutCubic,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 160),
+            curve: Curves.easeOutCubic,
+            padding: EdgeInsets.symmetric(
+              horizontal: 24 * scale,
+              vertical: 20 * scale,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28 * scale),
+              border: Border.all(
+                color: Colors.black,
+                width: 5 * scale,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(isPressed ? 0.5 : (isHovering ? 0.6 : 0.4)),
+                  blurRadius: isPressed ? 6 * scale : (isHovering ? 12 * scale : 8 * scale),
+                  offset: Offset(0, isPressed ? 4 * scale : (isHovering ? 8 * scale : 6 * scale)),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.person,
+                  size: 32 * scale,
+                  color: Colors.black,
+                  weight: 900,
+                ),
+                SizedBox(width: 16 * scale),
+                Expanded(
+                  child: FutureBuilder<String>(
+                    future: _formatPatientName(patientId),
+                    builder: (context, snapshot) {
+                      return Text(
+                        snapshot.data ?? 'Selectează un pacient',
+                        style: TextStyle(
+                          fontSize: 32 * scale,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black,
+                        ),
+                      );
+                    },
                   ),
                 ),
                 Icon(

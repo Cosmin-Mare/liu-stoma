@@ -11,10 +11,11 @@ import 'package:liu_stoma/widgets/programare_details/simple_date_picker.dart';
 import 'package:liu_stoma/widgets/programare_details/date_time_form_fields.dart';
 import 'package:liu_stoma/widgets/programare_details/action_buttons.dart';
 import 'package:liu_stoma/widgets/common/proceduri_section.dart';
+import 'package:liu_stoma/pacienti_page.dart';
 
 class ProgramareDetailsPage extends StatefulWidget {
   final Programare? programare;
-  final String patientId;
+  final String? patientId;
   final double scale;
   final bool isConsultatie;
   final Function(String message, bool isSuccess)? onNotification;
@@ -22,7 +23,7 @@ class ProgramareDetailsPage extends StatefulWidget {
   const ProgramareDetailsPage({
     super.key,
     this.programare,
-    required this.patientId,
+    this.patientId,
     required this.scale,
     required this.isConsultatie,
     this.onNotification,
@@ -39,6 +40,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
   late final TextEditingController _achitatController;
   late DateTime _selectedDateTime;
   late bool _notificare;
+  String? _patientId;
   bool _dateSkipped = false;
   bool _useTotalOverride = false;
   
@@ -72,6 +74,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
   @override
   void initState() {
     super.initState();
+    _patientId = widget.patientId;
     if (widget.programare != null) {
       // Initialize from existing proceduri
       if (widget.programare!.proceduri.isNotEmpty) {
@@ -133,7 +136,8 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
       _durataController = TextEditingController();
       _totalOverrideController = TextEditingController();
       _achitatController = TextEditingController();
-      _selectedDateTime = DateTime.now();
+      final now = DateTime.now();
+      _selectedDateTime = DateTime(now.year, now.month, now.day, now.hour, 0);
       _dateSkipped = false;
       _notificare = false;
     }
@@ -204,7 +208,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     final achitat = double.tryParse(_achitatController.text.trim()) ?? 0.0;
     
     final result = await PatientService.updateProgramare(
-      patientId: widget.patientId,
+      patientId: _patientId!,
       oldProgramare: widget.programare!,
       proceduri: validProceduri,
       timestamp: timestamp,
@@ -266,7 +270,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     final achitat = double.tryParse(_achitatController.text.trim()) ?? 0.0;
     
     await PatientService.updateProgramare(
-      patientId: widget.patientId,
+      patientId: _patientId!,
       oldProgramare: widget.programare!,
       proceduri: validProceduri,
       timestamp: timestamp,
@@ -399,7 +403,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     
     final result = widget.programare == null
         ? await PatientService.addProgramare(
-            patientId: widget.patientId,
+            patientId: _patientId!,
             proceduri: validProceduri,
             timestamp: timestamp,
             notificare: notificareValue,
@@ -408,7 +412,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
             achitat: achitat,
           )
         : await PatientService.updateProgramare(
-            patientId: widget.patientId,
+            patientId: _patientId!,
             oldProgramare: widget.programare!,
             proceduri: validProceduri,
             timestamp: timestamp,
@@ -473,7 +477,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     });
 
     final result = await PatientService.deleteProgramare(
-      patientId: widget.patientId,
+      patientId: _patientId!,
       programare: widget.programare!,
     );
 
@@ -557,7 +561,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     final notificareValue = widget.isConsultatie ? false : _originalNotificare!;
     
     final result = await PatientService.updateProgramare(
-      patientId: widget.patientId,
+      patientId: _patientId!,
       oldProgramare: currentProgramare,
       proceduri: _originalProceduri!,
       timestamp: timestamp,
@@ -631,7 +635,19 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Patient name below title
-                _buildPatientName(),
+                if (_patientId != null) _buildPatientName(),
+                if (_patientId == null) 
+                ElevatedButton(onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => const PacientiPage(isSelectionPage: true)),
+                  ).then((result) {
+                    if (result != null) {
+                      setState(() {
+                        _patientId = result;
+                      });
+                    }
+                  });
+                }, child: Text('Selectează un pacient')),
                 // Date and Time section
                 if (!widget.isConsultatie || !_dateSkipped) ...[
                   DatePickerButton(
@@ -781,7 +797,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     return StreamBuilder<DocumentSnapshot>(
       stream: FirebaseFirestore.instance
           .collection('patients')
-          .doc(widget.patientId)
+          .doc(_patientId!)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData && snapshot.data!.exists) {

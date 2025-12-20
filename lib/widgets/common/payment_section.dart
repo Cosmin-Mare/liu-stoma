@@ -348,23 +348,15 @@ class _TotalOverrideToggleState extends State<_TotalOverrideToggle> {
               vertical: 10 * widget.scale,
             ),
             decoration: BoxDecoration(
-              color: widget.useTotalOverride 
-                  ? Colors.orange[50] 
-                  : (_isHovering ? Colors.white : Colors.grey[50]),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(14 * widget.scale),
               border: Border.all(
                 color: widget.useTotalOverride 
                     ? Colors.orange[400]! 
-                    : (_isHovering ? Colors.black : Colors.grey[300]!),
+                    : (_isHovering ? Colors.black : Colors.black!),
                 width: 2.5 * widget.scale,
               ),
-              boxShadow: _isHovering ? [
-                BoxShadow(
-                  color: (widget.useTotalOverride ? Colors.orange : Colors.indigo).withValues(alpha: 0.2),
-                  blurRadius: 8 * widget.scale,
-                  offset: Offset(0, 3 * widget.scale),
-                ),
-              ] : null,
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 5 * widget.scale, offset: Offset(0, 5 * widget.scale))],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -388,13 +380,6 @@ class _TotalOverrideToggleState extends State<_TotalOverrideToggle> {
                       color: widget.useTotalOverride ? Colors.orange[700]! : Colors.black,
                       width: 3 * widget.scale,
                     ),
-                    boxShadow: widget.useTotalOverride ? [
-                      BoxShadow(
-                        color: Colors.orange.withValues(alpha: 0.4),
-                        blurRadius: 6 * widget.scale,
-                        offset: Offset(0, 2 * widget.scale),
-                      ),
-                    ] : null,
                   ),
                   child: widget.useTotalOverride
                       ? Icon(
@@ -733,32 +718,19 @@ class RestDePlataChip extends StatelessWidget {
         vertical: 12 * scale,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isPaid 
-              ? [Colors.green[400]!, Colors.green[600]!]
-              : [Colors.red[400]!, Colors.red[600]!],
-        ),
+        color: isPaid ? Colors.green : Colors.red,
         borderRadius: BorderRadius.circular(14 * scale),
         border: Border.all(
-          color: isPaid ? Colors.green[800]! : Colors.red[800]!,
+          color: Colors.black,
           width: 3 * scale,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: (isPaid ? Colors.green : Colors.red).withValues(alpha: 0.4),
-            blurRadius: 8 * scale,
-            offset: Offset(0, 4 * scale),
-          ),
-        ],
+        )
       ),
       child: Row(
         mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
         mainAxisAlignment: fullWidth ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: [
           Icon(
-            isPaid ? Icons.check_circle : Icons.pending,
+            isPaid ? Icons.check_circle : Icons.warning,
             size: 24 * _effectiveScale,
             color: Colors.white,
           ),

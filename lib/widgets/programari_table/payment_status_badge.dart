@@ -40,19 +40,12 @@ class PaymentStatusBadge extends StatelessWidget {
         vertical: (isMobile ? 6 : 4) * scale,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.green[400]!, Colors.green[600]!],
+        color: Colors.green,
+        border: Border.all(
+          color: Colors.black,
+          width: 2 * scale,
         ),
         borderRadius: BorderRadius.circular(8 * scale),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.green.withValues(alpha: 0.3),
-            blurRadius: 4 * scale,
-            offset: Offset(0, 2 * scale),
-          ),
-        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -83,25 +76,18 @@ class PaymentStatusBadge extends StatelessWidget {
         vertical: (isMobile ? 6 : 4) * scale,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.orange[400]!, Colors.orange[600]!],
-        ),
+        color: Colors.orange[400],
         borderRadius: BorderRadius.circular(8 * scale),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.orange.withValues(alpha: 0.3),
-            blurRadius: 4 * scale,
-            offset: Offset(0, 2 * scale),
-          ),
-        ],
+        border: Border.all(
+          color: Colors.black,
+          width: 2 * scale,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
-            Icons.pending,
+            Icons.warning,
             size: (isMobile ? 18 : 16) * scale,
             color: Colors.white,
           ),
@@ -126,19 +112,12 @@ class PaymentStatusBadge extends StatelessWidget {
         vertical: (isMobile ? 6 : 4) * scale,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.red[400]!, Colors.red[600]!],
+        color: Colors.red,
+        border: Border.all(
+          color: Colors.black,
+          width: 2 * scale,
         ),
         borderRadius: BorderRadius.circular(8 * scale),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.red.withValues(alpha: 0.3),
-            blurRadius: 4 * scale,
-            offset: Offset(0, 2 * scale),
-          ),
-        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

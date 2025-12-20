@@ -64,22 +64,15 @@ class _PatientModalHeaderState extends State<PatientModalHeader> {
                       ),
                       borderRadius: BorderRadius.circular(12 * widget.scale),
                       border: Border.all(
-                        color: Colors.red[800]!,
+                        color: Colors.black,
                         width: 3 * widget.scale,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.red.withValues(alpha: 0.4),
-                          blurRadius: 8 * widget.scale,
-                          offset: Offset(0, 4 * widget.scale),
-                        ),
-                      ],
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.pending,
+                          Icons.warning,
                           size: 24 * widget.scale,
                           color: Colors.white,
                         ),

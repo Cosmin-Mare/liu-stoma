@@ -151,12 +151,12 @@ class _PatientCardState extends State<PatientCard> {
                       vertical: 4 * widget.scale,
                     ),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Colors.red[400]!, Colors.red[600]!],
-                      ),
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(8 * widget.scale),
+                      border: Border.all(
+                        color: Colors.black,
+                        width: 2 * widget.scale,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,

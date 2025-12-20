@@ -10,6 +10,8 @@ class TimeGridView extends StatefulWidget {
   final DateTime currentDate;
   final Function(Programare programare, String patientId)? onProgramareTap;
   final bool isMobile;
+  final Function(String message, bool isSuccess)? onNotification;
+  final Function(DateTime dateTime)? onAddProgramareTap;
 
   const TimeGridView({
     super.key,
@@ -21,6 +23,8 @@ class TimeGridView extends StatefulWidget {
     required this.currentDate,
     this.onProgramareTap,
     this.isMobile = false,
+    this.onNotification,
+    this.onAddProgramareTap,
   });
 
   @override
@@ -35,6 +39,8 @@ class TimeGridViewState extends State<TimeGridView> {
   late ScrollController _scrollController;
   bool _hasScrolledToDefault = false;
   final Set<String> _hoveredProgramari = {};
+
+  DateTime? _timeSlotHovered;
 
   @override
   void initState() {
@@ -362,16 +368,33 @@ class TimeGridViewState extends State<TimeGridView> {
                                             // Bottom border of hour slot is at half-hour mark (thin)
                                             // Bottom border of half-hour slot is at hour mark (thick)
                                             return Expanded(
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  border: isLast ? null : Border(
-                                                    bottom: BorderSide(
-                                                      color: isHalfHour ? Colors.black26 : Colors.black12,
-                                                      width: isHalfHour ? 1 * widget.scale : 0.5 * widget.scale,
+                                              child: 
+                                              GestureDetector(
+                                                onTap: () async {
+                                                    widget.onAddProgramareTap?.call(DateTime(
+                                                    day.year,
+                                                    day.month,
+                                                    day.day,
+                                                    startHour + (index ~/ 2), index % 2 == 1 ? 30 : 0,
+                                                  )) ?? DateTime.now();
+                                                },
+                                                  child: 
+                                                  MouseRegion(
+                                                    onHover: (_) => setState(() => _timeSlotHovered = DateTime(day.year, day.month, day.day, startHour + (index ~/ 2), index % 2 == 1 ? 30 : 0)),
+                                                    onExit: (_) => setState(() => _timeSlotHovered = null),
+                                                    child:
+                                                      Container(
+                                                        decoration: BoxDecoration(
+                                                          color: _timeSlotHovered == DateTime(day.year, day.month, day.day, startHour + (index ~/ 2), index % 2 == 1 ? 30 : 0) ? Colors.grey[200]! : Colors.white,
+                                                          border: isLast ? null : Border(
+                                                            bottom: BorderSide(
+                                                              color: isHalfHour ? Colors.black26 : Colors.black12,
+                                                              width: isHalfHour ? 1 * widget.scale : 0.5 * widget.scale,
+                                                            ),
+                                                          ),
+                                                        ),
                                                     ),
-                                                  ),
-                                                ),
+                                                  )
                                               ),
                                             );
                                           }),
@@ -571,6 +594,7 @@ class TimeGridViewState extends State<TimeGridView> {
                                         }
                                         return eventWidgets;
                                       }(),
+                                      
                                       ],
                                     );
                                   },

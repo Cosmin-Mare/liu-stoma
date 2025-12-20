@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:liu_stoma/widgets/common/procedura_entry.dart';
 import 'package:liu_stoma/widgets/common/payment_section.dart';
 
@@ -141,20 +142,31 @@ class ProceduriSection extends StatelessWidget {
             vertical: 8 * scale,
           ),
           decoration: BoxDecoration(
-            color: useTotalOverride ? Colors.orange[50] : Colors.green[50],
+            color: Colors.green,
             borderRadius: BorderRadius.circular(12 * scale),
             border: Border.all(
-              color: useTotalOverride ? Colors.orange[400]! : Colors.green[400]!,
-              width: 2 * scale,
+              color: Colors.black,
+              width: 3 * scale,
             ),
           ),
-          child: Text(
+          child: 
+          Row(mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,children: [
+            Icon(
+              FontAwesomeIcons.moneyBillWave,
+              size: 22 * _effectiveFontScale,
+              color: Colors.white,
+            ),
+            SizedBox(width: 8 * scale),
+            Text(
             'Total: ${effectiveTotal.toStringAsFixed(0)} RON',
             style: TextStyle(
-              fontSize: 24 * _effectiveFontScale,
+              fontSize: 26 * _effectiveFontScale,
               fontWeight: FontWeight.w700,
-              color: useTotalOverride ? Colors.orange[800] : Colors.green[800],
+              color: Colors.white,
             ),
+            )
+          ],
           ),
         ),
       ],

@@ -18,7 +18,7 @@ import 'add_programare_modal/modal_header.dart';
 class AddProgramareModal extends StatefulWidget {
   final double scale;
   final VoidCallback onClose;
-  final Function(List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) onSave;
+  final Function(List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) onSave;
   final VoidCallback? onDelete;
   final Function(String errorMessage)? onValidationError;
   final Programare? initialProgramare;
@@ -29,7 +29,7 @@ class AddProgramareModal extends StatefulWidget {
   final String? patientId;
   /// Callback when autosave completes (success, message)
   final Function(bool success, String message)? onAutoSave;
-
+  final DateTime? initialDateTime;
   const AddProgramareModal({
     super.key,
     required this.scale,
@@ -43,6 +43,7 @@ class AddProgramareModal extends StatefulWidget {
     this.shouldCloseAfterSave = true,
     this.patientId,
     this.onAutoSave,
+    this.initialDateTime,
   });
 
   @override
@@ -73,6 +74,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
   double? _originalAchitat;
   DateTime? _originalDateTime;
   bool? _originalNotificare;
+
+  String? _patientId;
 
   @override
   void initState() {
@@ -144,7 +147,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
       _durataController = TextEditingController();
       _totalOverrideController = TextEditingController();
       _achitatController = TextEditingController();
-      _selectedDateTime = DateTime.now();
+      final now = DateTime.now();
+      _selectedDateTime = widget.initialDateTime ?? DateTime(now.year, now.month, now.day, now.hour, 0);
       _notificare = false;
       _dateSkipped = false;
     }
@@ -166,8 +170,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
     final DateTime? pickedDate = await showDatePicker(
       context: context,
       initialDate: _selectedDateTime,
-      firstDate: widget.isRetroactive ? DateTime(1900, 1, 1) : DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime(1900, 1, 1),
+      lastDate: DateTime.now().add(const Duration(days: 730)),
       builder: (context, child) {
         return DatePickerThemeHelper.buildDatePickerTheme(context, widget.scale, child!);
       },
@@ -281,6 +285,14 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
     // Parse achitat
     final achitat = double.tryParse(_achitatController.text.trim()) ?? 0.0;
     
+    if (_patientId == null) {
+      setState(() {
+        _notificationMessage = 'Nu a fost selectat niciun pacient';
+        _notificationIsSuccess = false;
+      });
+      return;
+    }
+
     widget.onSave(
       validProceduri,
       timestamp,
@@ -288,6 +300,7 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
       durata,
       totalOverride,
       achitat,
+      _patientId,
     );
     print('[AddProgramareModal] onSave callback called with ${validProceduri.length} proceduri, durata: $durata, totalOverride: $totalOverride, achitat: $achitat');
     
@@ -567,6 +580,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
                     isEditing: widget.initialProgramare != null,
                     isRetroactive: widget.isRetroactive,
                     patientName: widget.patientName,
+                    onPatientIdChange: setPatientId,
+                    patientId: _patientId,
                   ),
                   SizedBox(height: 25 * widget.scale),
                   // Date picker
@@ -946,6 +961,12 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
         }
       },
     );
+  }
+  
+  void setPatientId(String patientId) {
+    setState(() {
+      _patientId = patientId;
+    });
   }
 
   Widget _buildSaveButton() {

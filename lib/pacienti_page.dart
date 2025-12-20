@@ -20,7 +20,8 @@ import 'package:liu_stoma/widgets/confirm_dialog.dart';
 import 'package:liu_stoma/widgets/common/animated_back_button.dart';
 
 class PacientiPage extends StatefulWidget {
-  const PacientiPage({super.key});
+  final bool? isSelectionPage;
+  const PacientiPage({super.key, this.isSelectionPage});
 
   @override
   State<PacientiPage> createState() => _PacientiPageState();
@@ -120,11 +121,15 @@ class _PacientiPageState extends State<PacientiPage> {
                           padding: EdgeInsets.only(bottom: 20 * scale),
                           child: AnimatedBackButton(
                             onTap: () {
-                              Navigator.of(context).pushReplacement(
-                                NavigationUtils.fadeScaleTransition(
-                                  page: const MainApp(),
-                                ),
-                              );
+                              if (widget.isSelectionPage != null) {
+                                Navigator.of(context).pop(null);
+                              } else {
+                                Navigator.of(context).pushReplacement(
+                                  NavigationUtils.fadeScaleTransition(
+                                    page: const MainApp(),
+                                  ),
+                                );
+                              }
                             },
                             scale: scale,
                             isMobile: isMobile,
@@ -231,28 +236,32 @@ class _PacientiPageState extends State<PacientiPage> {
                             onPatientTap: (name, patientId, programari) {
                               print(
                                   '[PacientiPage] Patient tapped: $name (ID: $patientId)');
-                              if (isMobile) {
-                                // Navigate to separate page on mobile
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => PatientDetailsPage(
-                                      patientName: name,
-                                      patientId: patientId,
-                                      programari: programari,
-                                      scale: scale,
+                              if (widget.isSelectionPage != null) {
+                                Navigator.of(context).pop(patientId);
+                              } else {  
+                                if (isMobile) {
+                                  // Navigate to separate page on mobile
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => PatientDetailsPage(
+                                        patientName: name,
+                                        patientId: patientId,
+                                        programari: programari,
+                                        scale: scale,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              } else {
-                                // Show modal on desktop
-                                setState(() {
-                                  _selectedPatientName = name;
-                                  _selectedPatientId = patientId;
-                                  _selectedPatientProgramari = programari;
-                                });
+                                  );
+                                } else {
+                                  // Show modal on desktop
+                                  setState(() {
+                                    _selectedPatientName = name;
+                                    _selectedPatientId = patientId;
+                                    _selectedPatientProgramari = programari;
+                                  });
+                                }
                               }
                             },
-                            onPatientLongPress: isMobile
+                            onPatientLongPress: isMobile && widget.isSelectionPage == null
                                 ? (name, patientId, programari, menuPosition, cardPosition, cardSize) {
                                     setState(() {
                                       _longPressPatientId = patientId;
@@ -275,7 +284,7 @@ class _PacientiPageState extends State<PacientiPage> {
             ),
           ),
               // Modal overlay for editing existing patient (desktop only)
-              if (!isMobile && _selectedPatientName != null && _selectedPatientId != null)
+              if (!isMobile && _selectedPatientName != null && _selectedPatientId != null && widget.isSelectionPage == null)
                 PatientModal(
                   patientName: _selectedPatientName!,
                   patientId: _selectedPatientId!,
@@ -295,7 +304,7 @@ class _PacientiPageState extends State<PacientiPage> {
                   },
                 ),
               // Modal overlay for adding new patient (desktop only)
-              if (_showAddPatientModal && !isMobile)
+              if (_showAddPatientModal && !isMobile && widget.isSelectionPage == null)
                 Builder(
                   builder: (context) {
                     final rawQuery = _searchQueryNotifier.value;
@@ -349,7 +358,7 @@ class _PacientiPageState extends State<PacientiPage> {
                   },
                 ),
               // Long-press popup menu overlays (mobile only)
-              if (isMobile && _showLongPressMenu && _longPressMenuPosition != null)
+              if (isMobile && _showLongPressMenu && _longPressMenuPosition != null && widget.isSelectionPage == null)
                 PatientLongPressMenu(
                   scale: scale,
                   cardScale: (scale * 1.9).clamp(0.4, 1.4), // Match card scale calculation
@@ -461,7 +470,7 @@ class _PacientiPageState extends State<PacientiPage> {
                       _notificationIsSuccess = false;
                     });
                   },
-                  onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+                  onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
                     if (_longPressPatientId == null) return;
                     
                     // Check for overlaps before saving - check against ALL appointments from ALL patients

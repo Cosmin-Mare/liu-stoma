@@ -32,6 +32,8 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
   Programare? _programareToEdit;
   String? _patientIdForEdit;
   String? _patientNameForEdit;
+  bool _showAddProgramareModal = false;
+  DateTime? _selectedDateTime;
   String? _notificationMessage;
   bool? _notificationIsSuccess;
   bool _showOverlapConfirmation = false;
@@ -169,23 +171,20 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                   final programari = PatientParser.parseProgramari(patientData);
                   
                   for (var programare in programari) {
-                    final programareDate = programare.programareTimestamp.toDate();
-                    // Only show future programari or those from today
-                    final now = DateTime.now();
-                    final today = DateTime(now.year, now.month, now.day);
-                    final programareDay = DateTime(
-                      programareDate.year,
-                      programareDate.month,
-                      programareDate.day,
-                    );
-                    
-                    if (programareDay.isAfter(today) || programareDay.isAtSameMomentAs(today)) {
-                      allProgramari.add({
-                        'programare': programare,
-                        'patientName': patientName,
-                        'patientId': doc.id,
-                      });
-                    }
+                    // final programareDate = programare.programareTimestamp.toDate();
+                    // // Only show future programari or those from today
+                    // final now = DateTime.now();
+                    // final today = DateTime(now.year, now.month, now.day);
+                    // final programareDay = DateTime(
+                    //   programareDate.year,
+                    //   programareDate.month,
+                    //   programareDate.day,
+                    // );
+                    allProgramari.add({
+                      'programare': programare,
+                      'patientName': patientName,
+                      'patientId': doc.id,
+                    });
                   }
                 }
 
@@ -422,7 +421,9 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                                     weekdays: weekdays,
                                     currentDate: pageDate,
                                     onProgramareTap: _handleProgramareTap,
+                                    onAddProgramareTap: _handleAddProgramareTap,
                                     isMobile: isMobile,
+                                    onNotification: _handleNotification,
                                   );
                           },
                         ),
@@ -467,40 +468,8 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                             _notificationIsSuccess = false;
                           });
                         },
-                        onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
-                          // Check for overlaps before saving - check against ALL appointments from ALL patients
-                          final editedDateTime = timestamp.toDate();
-                          // Ensure durata defaults to 60 minutes if null
-                          final durataValue = durata ?? 60;
-                          
-                          // Skip overlap check for consultations without dates (epoch date)
-                          final isDateSkipped = editedDateTime.year == 1970 && 
-                                                editedDateTime.month == 1 && 
-                                                editedDateTime.day == 1;
-                          
-                          final hasOverlap = !isDateSkipped && _checkOverlap(
-                            editedDateTime,
-                            durataValue,
-                            allProgramari,
-                            excludePatientId: _patientIdForEdit,
-                            excludeProgramare: _programareToEdit,
-                          );
-                          
-                          if (hasOverlap) {
-                            setState(() {
-                              _pendingEditDateTime = editedDateTime;
-                              _pendingEditProceduri = proceduri;
-                              _pendingEditNotificare = notificare;
-                              _pendingEditDurata = durataValue;
-                              _pendingEditTotalOverride = totalOverride;
-                              _pendingEditAchitat = achitat;
-                              _showOverlapConfirmation = true;
-                            });
-                            // Modal stays open - will close after user confirms overlap
-                          } else {
-                            // No overlap, save and close immediately
-                            await _updateProgramare(_programareToEdit!, proceduri, timestamp, notificare, durataValue, totalOverride, achitat);
-                          }
+                        onSave: (proceduri, timestamp, notificare, durata, totalOverride, achitat, patientId) async {
+                          await _handleSaveProgramare(proceduri, timestamp, notificare, durata, totalOverride, achitat, allProgramari);
                         },
                         onDelete: () async {
                           if (_patientIdForEdit != null && _programareToEdit != null) {
@@ -508,6 +477,22 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                           }
                         },
                       ),
+                      if (_showAddProgramareModal)
+                        AddProgramareModal(
+                          scale: scale,
+                          initialDateTime: _selectedDateTime!,
+                          onClose: () {
+                            setState(() {
+                              _showAddProgramareModal = false;
+                              _selectedDateTime = null;
+                            });
+                          },
+                          onSave: (proceduri, timestamp, notificare, durata, totalOverride, achitat, patientId) async {
+                            await _handleAddProgramare(patientId, proceduri, timestamp, notificare, durata, totalOverride, achitat, allProgramari);
+                          },
+                          onValidationError: (errorMessage) => _handleNotification(errorMessage, false),
+                        ),
+
                     // Overlap Confirmation Dialog
                     if (_showOverlapConfirmation)
                       ConfirmDialog(
@@ -532,6 +517,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                               durataValue,
                               _pendingEditTotalOverride,
                               _pendingEditAchitat ?? 0.0,
+                              _patientIdForEdit!,
                             );
                           }
                           setState(() {
@@ -625,6 +611,121 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
     });
   }
 
+  void _handleAddProgramareTap(DateTime dateTime) {
+    setState(() {
+      _showAddProgramareModal = true;
+      _selectedDateTime = dateTime;
+    });
+  }
+
+  Future<void> _handleSaveProgramare(List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, List<Map<String, dynamic>> allProgramari) async {
+    // Check for overlaps before saving - check against ALL appointments from ALL patients
+    final editedDateTime = timestamp.toDate();
+    // Ensure durata defaults to 60 minutes if null
+    final durataValue = durata ?? 60;
+    
+    // Skip overlap check for consultations without dates (epoch date)
+    final isDateSkipped = editedDateTime.year == 1970 && 
+                          editedDateTime.month == 1 && 
+                          editedDateTime.day == 1;
+    
+    final hasOverlap = !isDateSkipped && _checkOverlap(
+      editedDateTime,
+      durataValue,
+      allProgramari,
+      excludePatientId: _patientIdForEdit,
+      excludeProgramare: _programareToEdit,
+    );
+    
+    if (hasOverlap) {
+      setState(() {
+        _pendingEditDateTime = editedDateTime;
+        _pendingEditProceduri = proceduri;
+        _pendingEditNotificare = notificare;
+        _pendingEditDurata = durataValue;
+        _pendingEditTotalOverride = totalOverride;
+        _pendingEditAchitat = achitat;
+        _showOverlapConfirmation = true;
+      });
+      // Modal stays open - will close after user confirms overlap
+    } else {
+      // No overlap, save and close immediately
+      await _updateProgramare(_programareToEdit!, proceduri, timestamp, notificare, durataValue, totalOverride, achitat, _patientIdForEdit!);
+    }
+  }
+
+  Future<void> _handleAddProgramare(String? patientId, List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, List<Map<String, dynamic>> allProgramari) async {
+    if (patientId == null) {
+      setState(() {
+        _notificationMessage = 'Nu a fost selectat niciun pacient';
+        _notificationIsSuccess = false;
+      });
+      return;
+    }
+    // Check for overlaps before saving - check against ALL appointments from ALL patients
+    final editedDateTime = timestamp.toDate();
+    // Ensure durata defaults to 60 minutes if null
+    final durataValue = durata ?? 60;
+    
+    // Skip overlap check for consultations without dates (epoch date)
+    final isDateSkipped = editedDateTime.year == 1970 && 
+                          editedDateTime.month == 1 && 
+                          editedDateTime.day == 1;
+
+    final programare = Programare(
+      proceduri: proceduri,
+      programareTimestamp: timestamp,
+      programareNotification: notificare,
+      durata: durataValue,
+      totalOverride: totalOverride,
+      achitat: achitat,
+    );
+
+    final hasOverlap = !isDateSkipped && _checkOverlap(
+      editedDateTime,
+      durataValue,
+      allProgramari,
+      excludePatientId: patientId,
+      excludeProgramare: programare,
+    );
+    
+    if (hasOverlap) {
+      setState(() {
+        _pendingEditDateTime = editedDateTime;
+        _pendingEditProceduri = proceduri;
+        _pendingEditNotificare = notificare;
+        _pendingEditDurata = durataValue;
+        _pendingEditTotalOverride = totalOverride;
+        _pendingEditAchitat = achitat;
+        _showOverlapConfirmation = true;
+      });
+      // Modal stays open - will close after user confirms overlap
+    } else {
+      // No overlap, save and close immediately
+      // await _updateProgramare(programare, proceduri, timestamp, notificare, durataValue, totalOverride, achitat, patientId);
+      final result = await PatientService.addProgramare(
+        patientId: patientId,
+        proceduri: proceduri,
+        timestamp: timestamp,
+        notificare: notificare,
+        durata: durataValue,
+        totalOverride: totalOverride,
+        achitat: achitat,
+      );
+      if (mounted) {
+        setState(() {
+          if (result.success) {
+            _notificationMessage = 'Programare adăugată cu succes!';
+            _notificationIsSuccess = true;
+          } else {
+            _notificationMessage = result.errorMessage ?? 'Eroare la adăugare';
+            _notificationIsSuccess = false;
+          }
+        });
+      }
+    }
+  }
+
   // Check overlap against all appointments from all patients (using the provided allProgramari list)
   bool _checkOverlap(DateTime newDateTime, int? newDurata, List<Map<String, dynamic>> allProgramari, {String? excludePatientId, Programare? excludeProgramare}) {
     final newStartMinutes = newDateTime.hour * 60 + newDateTime.minute;
@@ -664,11 +765,18 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
     return false;
   }
 
-  Future<void> _updateProgramare(Programare oldProgramare, List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
-    if (_patientIdForEdit == null) return;
-    
+  void _handleNotification(String message, bool isSuccess) {
+    setState(() {
+      _notificationMessage = message;
+      _notificationIsSuccess = isSuccess;
+    });
+  }
+
+  Future<void> _updateProgramare(Programare oldProgramare, List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
+    if (patientId == null) return;
+
     final result = await PatientService.updateProgramare(
-      patientId: _patientIdForEdit!,
+      patientId: patientId,
       oldProgramare: oldProgramare,
       proceduri: proceduri,
       timestamp: timestamp,
@@ -696,15 +804,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
     
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
-        setState(() {
-          if (result.success) {
-            _notificationMessage = 'Programare actualizată cu succes!';
-            _notificationIsSuccess = true;
-          } else {
-            _notificationMessage = result.errorMessage ?? 'Eroare la actualizare';
-            _notificationIsSuccess = false;
-          }
-        });
+        _handleNotification(result.success ? 'Programare actualizată cu succes!' : result.errorMessage ?? 'Eroare la actualizare', result.success);
       }
     });
   }

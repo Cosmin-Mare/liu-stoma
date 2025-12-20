@@ -35,9 +35,9 @@ class PatientModalOverlays extends StatelessWidget {
   final VoidCallback onCloseHistoryModal;
   final VoidCallback onCloseFilesModal;
   final Function(String) onValidationError;
-  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveAddProgramare;
-  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveRetroactiveProgramare;
-  final Function(List<Procedura>, Timestamp, bool, int?, double?, double) onSaveEditProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double, String?) onSaveAddProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double, String?) onSaveRetroactiveProgramare;
+  final Function(List<Procedura>, Timestamp, bool, int?, double?, double, String?) onSaveEditProgramare;
   final Function(Programare) onEditProgramare;
   final Function(Programare) onDeleteProgramare;
   final VoidCallback onCancelDeleteProgramare;
@@ -121,16 +121,7 @@ class PatientModalOverlays extends StatelessWidget {
             onSave: onSaveAddProgramare,
           ),
         // Overlap Confirmation Dialog
-        if (showOverlapConfirmation)
-          ConfirmDialog(
-            title: 'Confirmă suprapunerea',
-            message: 'Această programare se suprapune cu o altă programare. Ești sigură că vrei să continui?',
-            confirmText: 'Salvează',
-            cancelText: 'Anulează',
-            scale: scale,
-            onConfirm: onConfirmOverlap,
-            onCancel: onCancelOverlap,
-          ),
+       
         // Delete patient confirmation dialog
         if (showDeletePatientConfirmation)
           DeletePatientDialog(
@@ -197,6 +188,16 @@ class PatientModalOverlays extends StatelessWidget {
             onConfirm: () => onDeleteProgramare(programareToDelete!),
             onCancel: onCancelDeleteProgramare,
           ),
+        if (showOverlapConfirmation)
+        ConfirmDialog(
+          title: 'Confirmă suprapunerea',
+          message: 'Această programare se suprapune cu o altă programare. Ești sigură că vrei să continui?',
+          confirmText: 'Salvează',
+          cancelText: 'Anulează',
+          scale: scale,
+          onConfirm: onConfirmOverlap,
+          onCancel: onCancelOverlap,
+        ),
         // Custom notification
         if (notificationMessage != null && notificationIsSuccess != null)
           CustomNotification(

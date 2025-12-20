@@ -99,7 +99,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveAddProgramare(
-      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
     final patientId = getEffectivePatientId();
     if (patientId == null) return;
 
@@ -151,9 +151,9 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveRetroactiveProgramare(
-      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
-    final patientId = getEffectivePatientId();
-    if (patientId == null) return;
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
+    final patientIdLocal = getEffectivePatientId() ?? patientId;
+    if (patientIdLocal == null) return;
 
     final newDateTime = timestamp.toDate();
     final durataValue = durata ?? 60;
@@ -176,12 +176,12 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
         pendingAddDurata = durataValue;
         pendingAddTotalOverride = totalOverride;
         pendingAddAchitat = achitat;
-        pendingAddPatientId = patientId;
+        pendingAddPatientId = patientIdLocal;
         showOverlapConfirmation = true;
       });
     } else {
       final result = await PatientService.addProgramare(
-        patientId: patientId,
+        patientId: patientIdLocal,
         proceduri: proceduri,
         timestamp: timestamp,
         notificare: notificare,
@@ -208,7 +208,7 @@ mixin PatientModalProgramareHandlersMixin on State<PatientModal> {
   }
 
   Future<void> handleSaveEditProgramare(
-      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+      List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
     print('[PatientModal] handleSaveEditProgramare called');
     print('[PatientModal] Received durata: $durata (type: ${durata.runtimeType})');
     print('[PatientModal] programareToEdit: ${programareToEdit?.displayText}');

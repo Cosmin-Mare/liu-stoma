@@ -136,7 +136,7 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
               // Check for overlaps before saving - check against ALL appointments from ALL patients
               final newDateTime = timestamp.toDate();
               // Ensure durata defaults to 60 minutes if null
@@ -250,7 +250,7 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
               final result = await PatientService.addProgramare(
                 patientId: widget.patientId,
                 proceduri: proceduri,
@@ -295,7 +295,7 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
             onValidationError: (String errorMessage) {
               widget.onNotification(errorMessage, false);
             },
-            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat) async {
+            onSave: (List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, String? patientId) async {
               // Ensure durata defaults to 60 minutes if null
               final durataValue = durata ?? 60;
               await _updateProgramare(widget.programareToEdit!, proceduri, timestamp, notificare, durataValue, totalOverride, achitat);
