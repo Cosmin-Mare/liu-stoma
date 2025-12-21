@@ -66,11 +66,11 @@ class ProceduriSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20 * scale),
         border: Border.all(
-          color: Colors.grey[300]!,
-          width: 2 * scale,
+          color: Colors.black,
+          width: 8 * scale,
         ),
       ),
       padding: EdgeInsets.all(16 * scale),
@@ -93,13 +93,12 @@ class ProceduriSection extends StatelessWidget {
           ...List.generate(proceduraEntries.length, (index) {
             return _buildProceduraRow(index);
           }),
-          
-          SizedBox(height: 16 * scale),
-          
+          _buildAddButtons(),
+          SizedBox(height: 40 * scale),
           // Payment section
           PaymentSection(
             scale: scale,
-            fontScale: fontScale,
+            fontScale: fontScale * (isMobile ? 1.3 : 1.0),
             useTotalOverride: useTotalOverride,
             totalOverrideController: totalOverrideController,
             achitatController: achitatController,
@@ -117,7 +116,7 @@ class ProceduriSection extends StatelessWidget {
           SizedBox(height: 12 * scale),
           
           // Add buttons
-          _buildAddButtons(),
+          
         ],
       ),
     );
@@ -130,7 +129,7 @@ class ProceduriSection extends StatelessWidget {
         Text(
           'Proceduri',
           style: TextStyle(
-            fontSize: 28 * _effectiveFontScale,
+            fontSize: 28 * _effectiveFontScale * (isMobile ? 1.8 : 1.0),
             fontWeight: FontWeight.w700,
             color: Colors.black87,
           ),
@@ -143,7 +142,7 @@ class ProceduriSection extends StatelessWidget {
           ),
           decoration: BoxDecoration(
             color: Colors.green,
-            borderRadius: BorderRadius.circular(12 * scale),
+            borderRadius: BorderRadius.circular(50 * scale),
             border: Border.all(
               color: Colors.black,
               width: 3 * scale,
@@ -299,7 +298,7 @@ class ProceduriSection extends StatelessWidget {
             onTap: onAddConsult!,
           ),
         AddProceduraButton(
-          scale: scale,
+          scale: isMobile ? 1.5 * scale : scale,
           fontScale: fontScale,
           label: 'Adaugă procedură',
           icon: Icons.add_circle_outline,
@@ -340,8 +339,8 @@ class ProceduraCardMobile extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16 * scale),
         border: Border.all(
-          color: Colors.grey[300]!,
-          width: 2 * scale,
+          color: Colors.black,
+          width: 4 * scale,
         ),
       ),
       child: Column(
@@ -372,7 +371,7 @@ class ProceduraCardMobile extends StatelessWidget {
               ),
               SizedBox(width: 10 * scale),
               SizedBox(
-                width: 80 * scale,
+                width: 140 * scale,
                 child: ProceduraTextField(
                   scale: scale,
                   fontScale: fontScale,

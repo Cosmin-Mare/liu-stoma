@@ -338,7 +338,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> with SingleTick
                 tabs: [
                   Tab(
                     icon: Icon(Icons.calendar_today, size: 60 * widget.scale),
-                    child: Text('Programări', style: TextStyle(fontSize: 32 * widget.scale)),
+                    child: Text('Programări', style: TextStyle(fontSize: 30 * widget.scale)),
                   ),
                   Tab(
                     icon: Icon(Icons.person, size: 60 * widget.scale),
@@ -350,7 +350,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> with SingleTick
                   ),
                   Tab(
                     icon: Icon(Icons.folder, size: 60 * widget.scale),
-                    child: Text('Fișiere', style: TextStyle(fontSize: 42 * widget.scale, fontWeight: FontWeight.w700)),
+                    child: Text('Fișiere', style: TextStyle(fontSize: 32 * widget.scale)),
                   ),
                 ],
                 labelColor: Colors.black,

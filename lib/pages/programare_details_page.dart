@@ -755,6 +755,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
                 if (widget.isConsultatie) SizedBox(height: 40 * widget.scale),
                 // Action buttons
                 _buildActionButtons(),
+                SizedBox(height: 50 * widget.scale),
               ],
             ),
           ),

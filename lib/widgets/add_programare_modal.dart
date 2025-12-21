@@ -77,6 +77,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
 
   String? _patientId;
 
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -286,6 +288,7 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
     final achitat = double.tryParse(_achitatController.text.trim()) ?? 0.0;
     
     if (_patientId == null) {
+      _scrollToTop();
       setState(() {
         _notificationMessage = 'Nu a fost selectat niciun pacient';
         _notificationIsSuccess = false;
@@ -312,6 +315,10 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
     } else {
       print('[AddProgramareModal] Keeping modal open (parent will close it)');
     }
+  }
+
+  void _scrollToTop() {
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   Future<void> _handleDelete() async {
@@ -564,11 +571,13 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
           onClose: _handleClose,
           scale: widget.scale,
           width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.9,
           constraints: BoxConstraints(
             maxWidth: 1400 * widget.scale,
             minHeight: 500 * widget.scale,
           ),
           child: SingleChildScrollView(
+            controller: _scrollController,
             child: Padding(
               padding: EdgeInsets.all(DesignConstants.modalPadding(widget.scale)),
               child: Column(

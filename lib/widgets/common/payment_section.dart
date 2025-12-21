@@ -353,7 +353,7 @@ class _TotalOverrideToggleState extends State<_TotalOverrideToggle> {
               border: Border.all(
                 color: widget.useTotalOverride 
                     ? Colors.orange[400]! 
-                    : (_isHovering ? Colors.black : Colors.black!),
+                    : (_isHovering ? Colors.black : Colors.black),
                 width: 2.5 * widget.scale,
               ),
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 5 * widget.scale, offset: Offset(0, 5 * widget.scale))],
@@ -652,7 +652,7 @@ class _AchitaCompletButtonState extends State<AchitaCompletButton> {
             ),
             decoration: BoxDecoration(
               color: _isHovering ? Colors.green[700] : Colors.green[600],
-              borderRadius: BorderRadius.circular(12 * widget.scale),
+              borderRadius: BorderRadius.circular(20 * widget.scale),
               border: Border.all(
                 color: Colors.black,
                 width: 3 * widget.scale,
@@ -675,7 +675,7 @@ class _AchitaCompletButtonState extends State<AchitaCompletButton> {
                 ),
                 SizedBox(width: 6 * widget.scale),
                 Text(
-                  'Achită complet',
+                  'Achită',
                   style: TextStyle(
                     fontSize: 20 * _effectiveScale,
                     fontWeight: FontWeight.w800,
@@ -719,7 +719,7 @@ class RestDePlataChip extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: isPaid ? Colors.green : Colors.red,
-        borderRadius: BorderRadius.circular(14 * scale),
+        borderRadius: BorderRadius.circular(50 * scale),
         border: Border.all(
           color: Colors.black,
           width: 3 * scale,

@@ -65,8 +65,8 @@ class ProgramariTab extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.all(24 * scale),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ElevatedButton.icon(
                 onPressed: () async {
@@ -106,7 +106,7 @@ class ProgramariTab extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 24 * scale),
+              SizedBox(height: 20 * scale),
               ElevatedButton.icon(
                 onPressed: () async {
                   final result = await Navigator.of(context).push(
@@ -145,6 +145,7 @@ class ProgramariTab extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: 40 * scale),
             ],
           ),
         ),

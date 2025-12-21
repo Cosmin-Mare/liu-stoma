@@ -36,11 +36,7 @@ Future<void> main() async {
     );
     
     windowManager.waitUntilReadyToShow(windowOptions, () async {
-      // Set window to a large size (near-fullscreen but not maximized)
-      await windowManager.setSize(const Size(1600, 1000));
-      await windowManager.center();
-      await windowManager.show();
-      await windowManager.focus();
+      await windowManager.maximize();
     });
   }
   

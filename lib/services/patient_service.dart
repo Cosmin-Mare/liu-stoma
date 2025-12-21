@@ -242,7 +242,6 @@ class PatientService {
       
       if (!found) {
         print('[PatientService] ERROR: Programare not found in database');
-        throw Exception('Eroare: Programarea nu a fost găsită');
         return PatientServiceResult.error('Eroare: Programarea nu a fost găsită');
       }
       
