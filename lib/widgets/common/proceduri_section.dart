@@ -84,7 +84,7 @@ class ProceduriSection extends StatelessWidget {
           // Empty state
           if (proceduraEntries.isEmpty && showEmptyState)
             _buildEmptyState(),
-          
+          SizedBox(height: 16 * scale),
           // Column headers (only on desktop and when there are entries)
           if (!isMobile && proceduraEntries.isNotEmpty)
             _buildColumnHeaders(),
@@ -174,6 +174,8 @@ class ProceduriSection extends StatelessWidget {
 
   Widget _buildEmptyState() {
     return Container(
+      height: 200 * scale,
+      width: double.infinity,
       padding: EdgeInsets.all(24 * scale),
       decoration: BoxDecoration(
         color: Colors.grey[100],
@@ -195,7 +197,7 @@ class ProceduriSection extends StatelessWidget {
           Text(
             'Nicio procedură adăugată',
             style: TextStyle(
-              fontSize: 20 * _effectiveFontScale,
+              fontSize: isMobile ? 40 * _effectiveFontScale : 30 * _effectiveFontScale,
               fontWeight: FontWeight.w600,
               color: Colors.grey[500],
             ),
@@ -204,7 +206,8 @@ class ProceduriSection extends StatelessWidget {
           Text(
             'Apasă butonul de mai jos pentru a adăuga',
             style: TextStyle(
-              fontSize: 16 * _effectiveFontScale,
+              fontSize: isMobile ? 24 * _effectiveFontScale : 24 * _effectiveFontScale,
+              
               color: Colors.grey[400],
             ),
           ),
@@ -290,7 +293,7 @@ class ProceduriSection extends StatelessWidget {
       children: [
         if (onAddConsult != null)
           AddProceduraButton(
-            scale: scale,
+            scale: isMobile ? 1.5 * scale : scale,
             fontScale: fontScale,
             label: 'Consult',
             icon: Icons.medical_information_outlined,

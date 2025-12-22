@@ -82,6 +82,7 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
   @override
   void initState() {
     super.initState();
+    _patientId = widget.patientId;
     if (widget.initialProgramare != null) {
       print('[AddProgramareModal] Initializing with existing programare');
       print('[AddProgramareModal] initialProgramare.durata: ${widget.initialProgramare!.durata} (type: ${widget.initialProgramare!.durata.runtimeType})');
@@ -94,8 +95,8 @@ class _AddProgramareModalState extends State<AddProgramareModal> {
           multiplicator: p.multiplicator,
         )).toList();
       } else {
-        // Fallback to empty entry
-        _proceduraEntries = [ProceduraEntry()];
+        // Fallback to empty list
+        _proceduraEntries = [];
       }
       
       final durataText = widget.initialProgramare!.durata != null 

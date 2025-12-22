@@ -116,6 +116,7 @@ class PatientModalOverlays extends StatelessWidget {
           AddProgramareModal(
             scale: scale,
             shouldCloseAfterSave: false,
+            patientId: patientId,
             onClose: onCloseAddProgramareModal,
             onValidationError: onValidationError,
             onSave: onSaveAddProgramare,

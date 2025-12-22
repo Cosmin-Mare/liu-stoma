@@ -26,6 +26,7 @@ class AddProgramareModalHeader extends StatefulWidget {
 class _AddProgramareModalHeaderState extends State<AddProgramareModalHeader> {
   bool _patientPickerButtonHovering = false;
   bool _patientPickerButtonPressed = false;
+
   @override
   Widget build(BuildContext context) {
     return Column(

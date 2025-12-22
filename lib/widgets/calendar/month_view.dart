@@ -9,6 +9,7 @@ class MonthView extends StatelessWidget {
   final List<String> weekdays;
   final DateTime currentDate;
   final Function(DateTime day)? onDayTap;
+  final bool isMobile;
 
   const MonthView({
     super.key,
@@ -19,6 +20,7 @@ class MonthView extends StatelessWidget {
     required this.weekdays,
     required this.currentDate,
     this.onDayTap,
+    required this.isMobile,
   });
 
   List<Map<String, dynamic>> _getProgramariForDay(DateTime day) {
@@ -36,7 +38,7 @@ class MonthView extends StatelessWidget {
     return GridView.builder(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
-        childAspectRatio: 1.2,
+        childAspectRatio: isMobile ? 0.5 : 1.2,
         crossAxisSpacing: 8 * scale,
         mainAxisSpacing: 8 * scale,
       ),
@@ -56,6 +58,7 @@ class MonthView extends StatelessWidget {
           isCurrentMonth: isCurrentMonth,
           scale: scale,
           onTap: () => onDayTap?.call(day),
+          isMobile: isMobile,
         );
       },
     );
@@ -69,6 +72,7 @@ class _AnimatedDayCell extends StatefulWidget {
   final bool isCurrentMonth;
   final double scale;
   final VoidCallback? onTap;
+  final bool isMobile;
 
   const _AnimatedDayCell({
     required this.day,
@@ -77,6 +81,7 @@ class _AnimatedDayCell extends StatefulWidget {
     required this.isCurrentMonth,
     required this.scale,
     this.onTap,
+    required this.isMobile,
   });
 
   @override
@@ -143,7 +148,7 @@ class _AnimatedDayCellState extends State<_AnimatedDayCell> {
                 Text(
                   '${widget.day.day}',
                   style: TextStyle(
-                    fontSize: 24 * widget.scale,
+                    fontSize: widget.isMobile ? 32 * widget.scale : 24 * widget.scale,
                     fontWeight: widget.isToday ? FontWeight.w900 : FontWeight.w700,
                     color: widget.isCurrentMonth ? Colors.black : Colors.black54,
                   ),
@@ -179,7 +184,7 @@ class _AnimatedDayCellState extends State<_AnimatedDayCell> {
                             Text(
                               timeStr,
                               style: TextStyle(
-                                fontSize: 14 * widget.scale,
+                                fontSize: 30 * widget.scale,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.black,
                               ),
@@ -187,7 +192,7 @@ class _AnimatedDayCellState extends State<_AnimatedDayCell> {
                             Text(
                               programare.displayText,
                               style: TextStyle(
-                                fontSize: 16 * widget.scale,
+                                fontSize: 20 * widget.scale,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.black,
                                 overflow: TextOverflow.ellipsis,

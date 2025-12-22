@@ -130,6 +130,7 @@ class _PatientDetailsOverlaysState extends State<PatientDetailsOverlays> {
           AddProgramareModal(
             scale: widget.scale,
             shouldCloseAfterSave: false, // Don't auto-close, we'll close it after overlap confirmation
+            patientId: widget.patientId,
             onClose: () {
               widget.onSetShowAddProgramareModal(false);
             },

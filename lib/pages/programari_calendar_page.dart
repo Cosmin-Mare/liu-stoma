@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:liu_stoma/pages/programare_details_page.dart';
 import 'package:liu_stoma/widgets/teeth_background.dart';
 import 'package:liu_stoma/utils/patient_parser.dart';
 import 'package:liu_stoma/utils/navigation_utils.dart';
@@ -411,6 +412,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                                     weekdays: weekdays,
                                     currentDate: pageDate,
                                     onDayTap: _navigateToDayView,
+                                    isMobile: isMobile,
                                   )
                                 : TimeGridView(
                                     key: isCurrentPage ? _timeGridViewKey : null,
@@ -478,20 +480,21 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                         },
                       ),
                       if (_showAddProgramareModal)
-                        AddProgramareModal(
-                          scale: scale,
-                          initialDateTime: _selectedDateTime!,
-                          onClose: () {
-                            setState(() {
-                              _showAddProgramareModal = false;
-                              _selectedDateTime = null;
-                            });
-                          },
-                          onSave: (proceduri, timestamp, notificare, durata, totalOverride, achitat, patientId) async {
-                            await _handleAddProgramare(patientId, proceduri, timestamp, notificare, durata, totalOverride, achitat, allProgramari);
-                          },
-                          onValidationError: (errorMessage) => _handleNotification(errorMessage, false),
-                        ),
+                        if (!isMobile)
+                          AddProgramareModal(
+                            scale: scale,
+                            initialDateTime: _selectedDateTime!,
+                            onClose: () {
+                              setState(() {
+                                _showAddProgramareModal = false;
+                                _selectedDateTime = null;
+                              });
+                            },
+                            onSave: (proceduri, timestamp, notificare, durata, totalOverride, achitat, patientId) async {
+                              await _handleAddProgramare(patientId, proceduri, timestamp, notificare, durata, totalOverride, achitat, allProgramari);
+                            },
+                            onValidationError: (errorMessage) => _handleNotification(errorMessage, false),
+                          ),
 
                     // Overlap Confirmation Dialog
                     if (_showOverlapConfirmation)
@@ -611,11 +614,26 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
     });
   }
 
-  void _handleAddProgramareTap(DateTime dateTime) {
-    setState(() {
-      _showAddProgramareModal = true;
-      _selectedDateTime = dateTime;
-    });
+  void _handleAddProgramareTap(DateTime dateTime, bool isMobile, scale) {
+    if (isMobile) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ProgramareDetailsPage(
+            programare: null,
+            patientId: _patientIdForEdit,
+            scale: scale,
+            isConsultatie: false,
+            initialDateTime: dateTime,
+            onNotification: _handleNotification,
+          ),
+        ),
+      );
+    } else {
+      setState(() {
+        _showAddProgramareModal = true;
+        _selectedDateTime = dateTime;
+      });
+    }
   }
 
   Future<void> _handleSaveProgramare(List<Procedura> proceduri, Timestamp timestamp, bool notificare, int? durata, double? totalOverride, double achitat, List<Map<String, dynamic>> allProgramari) async {

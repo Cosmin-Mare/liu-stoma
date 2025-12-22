@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:liu_stoma/models/programare.dart';
 import 'package:liu_stoma/services/patient_service.dart';
+import 'package:liu_stoma/widgets/add_programare_modal/form_fields.dart' as add_programare_modal;
 import 'package:liu_stoma/widgets/confirm_dialog.dart';
 import 'package:liu_stoma/widgets/custom_notification.dart';
 import 'package:liu_stoma/widgets/common/simple_time_picker.dart';
@@ -19,6 +20,7 @@ class ProgramareDetailsPage extends StatefulWidget {
   final double scale;
   final bool isConsultatie;
   final Function(String message, bool isSuccess)? onNotification;
+  final DateTime? initialDateTime;
 
   const ProgramareDetailsPage({
     super.key,
@@ -27,6 +29,7 @@ class ProgramareDetailsPage extends StatefulWidget {
     required this.scale,
     required this.isConsultatie,
     this.onNotification,
+    this.initialDateTime,
   });
 
   @override
@@ -34,7 +37,7 @@ class ProgramareDetailsPage extends StatefulWidget {
 }
 
 class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
-  late final List<ProceduraEntry> _proceduraEntries;
+  late List<ProceduraEntry> _proceduraEntries = [];
   late final TextEditingController _durataController;
   late final TextEditingController _totalOverrideController;
   late final TextEditingController _achitatController;
@@ -50,6 +53,8 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
   bool _timeButtonPressed = false;
   bool _skipDateButtonPressed = false;
   bool _notificareButtonPressed = false;
+  bool _patientPickerButtonPressed = false;
+  bool _patientPickerButtonHovering = false;
   
   bool _showDeleteConfirmation = false;
   String? _notificationMessage;
@@ -84,8 +89,8 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
           multiplicator: p.multiplicator,
         )).toList();
       } else {
-        // Fallback to empty entry
-        _proceduraEntries = [ProceduraEntry()];
+        // Fallback to empty list
+        _proceduraEntries = [];
       }
       
       _durataController = TextEditingController(
@@ -131,13 +136,11 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
       _originalDateTime = _selectedDateTime;
       _originalNotificare = _notificare;
     } else {
-      // Adding new programare/consultatie
-      _proceduraEntries = [ProceduraEntry()];
       _durataController = TextEditingController();
       _totalOverrideController = TextEditingController();
       _achitatController = TextEditingController();
       final now = DateTime.now();
-      _selectedDateTime = DateTime(now.year, now.month, now.day, now.hour, 0);
+      _selectedDateTime = widget.initialDateTime ?? DateTime(now.year, now.month, now.day, now.hour, 0);
       _dateSkipped = false;
       _notificare = false;
     }
@@ -401,6 +404,14 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     // Parse achitat
     final achitat = double.tryParse(_achitatController.text.trim()) ?? 0.0;
     
+    if(_patientId == null) {
+      setState(() {
+        _notificationMessage = 'Vă rugăm să selectați un pacient';
+        _notificationIsSuccess = false;
+      });
+      return;
+    }
+    
     final result = widget.programare == null
         ? await PatientService.addProgramare(
             patientId: _patientId!,
@@ -634,20 +645,49 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Patient name below title
-                if (_patientId != null) _buildPatientName(),
-                if (_patientId == null) 
-                ElevatedButton(onPressed: () {
+                add_programare_modal.PatientPickerButton(
+                patientId: _patientId ?? '',
+                isHovering: _patientPickerButtonHovering,
+                isPressed: _patientPickerButtonPressed,
+                onHoverEnter: () {
+                  if (!_patientPickerButtonHovering) {
+                    setState(() => _patientPickerButtonHovering = true);
+                  }
+                },
+                onHoverExit: () {
+                  if (_patientPickerButtonHovering) {
+                    setState(() => _patientPickerButtonHovering = false);
+                  }
+                },
+                onTapDown: () {
+                  if (!_patientPickerButtonPressed) {
+                    setState(() => _patientPickerButtonPressed = true);
+                  }
+                },
+                onTapUp: () {
+                  if (_patientPickerButtonPressed) {
+                    setState(() => _patientPickerButtonPressed = false);
+                  }
+                },
+                onTapCancel: () {
+                  if (_patientPickerButtonPressed) {
+                    setState(() => _patientPickerButtonPressed = false);
+                  }
+                },
+                scale: widget.scale * 1.4,
+                onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(builder: (context) => const PacientiPage(isSelectionPage: true)),
                   ).then((result) {
                     if (result != null) {
                       setState(() {
-                        _patientId = result;
+                        _patientId = result as String;
                       });
                     }
                   });
-                }, child: Text('Selectează un pacient')),
+                },
+              ),
+              SizedBox(height: 20 * widget.scale),
                 // Date and Time section
                 if (!widget.isConsultatie || !_dateSkipped) ...[
                   DatePickerButton(
@@ -712,6 +752,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
                   achitatController: _achitatController,
                   onAddProcedura: _addProcedura,
                   onRemoveProcedura: _removeProcedura,
+                  onAddConsult: _addConsultation,
                   onTotalOverrideToggle: () {
                     setState(() {
                       _useTotalOverride = !_useTotalOverride;
@@ -794,34 +835,6 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
     );
   }
 
-  Widget _buildPatientName() {
-    return StreamBuilder<DocumentSnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('patients')
-          .doc(_patientId!)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data!.exists) {
-          final patientData = snapshot.data!.data() as Map<String, dynamic>;
-          final patientName = patientData['nume'] as String? ?? '';
-          if (patientName.isNotEmpty) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: 24 * widget.scale),
-              child: Text(
-                patientName,
-                style: TextStyle(
-                  fontSize: 60 * widget.scale,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
-                ),
-              ),
-            );
-          }
-        }
-        return SizedBox.shrink();
-      },
-    );
-  }
 
   Widget _buildDurataInput() {
     return Container(
@@ -912,5 +925,12 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
         ),
       ],
     );
+  }
+
+  void _addConsultation() {
+    setState(() {
+      _proceduraEntries.add(ProceduraEntry(nume: 'Consult', cost: 0));
+    });
+    _resetAutoSaveTimer();
   }
 }

@@ -11,7 +11,7 @@ class TimeGridView extends StatefulWidget {
   final Function(Programare programare, String patientId)? onProgramareTap;
   final bool isMobile;
   final Function(String message, bool isSuccess)? onNotification;
-  final Function(DateTime dateTime)? onAddProgramareTap;
+  final Function(DateTime dateTime, bool isMobile, double scale)? onAddProgramareTap;
 
   const TimeGridView({
     super.key,
@@ -337,7 +337,6 @@ class TimeGridViewState extends State<TimeGridView> {
                     child: Row(
                       children: widget.days.map((day) {
                         final dayProgramari = _getProgramariForDay(day);
-
                         return Expanded(
                           child: Container(
                             margin: EdgeInsets.symmetric(horizontal: 4 * widget.scale),
@@ -371,12 +370,12 @@ class TimeGridViewState extends State<TimeGridView> {
                                               child: 
                                               GestureDetector(
                                                 onTap: () async {
-                                                    widget.onAddProgramareTap?.call(DateTime(
+                                                    widget.onAddProgramareTap?.call((DateTime(
                                                     day.year,
                                                     day.month,
                                                     day.day,
                                                     startHour + (index ~/ 2), index % 2 == 1 ? 30 : 0,
-                                                  )) ?? DateTime.now();
+                                                  )), widget.isMobile, widget.scale);
                                                 },
                                                   child: 
                                                   MouseRegion(
@@ -388,7 +387,7 @@ class TimeGridViewState extends State<TimeGridView> {
                                                           color: _timeSlotHovered == DateTime(day.year, day.month, day.day, startHour + (index ~/ 2), index % 2 == 1 ? 30 : 0) ? Colors.grey[200]! : Colors.white,
                                                           border: isLast ? null : Border(
                                                             bottom: BorderSide(
-                                                              color: isHalfHour ? Colors.black26 : Colors.black12,
+                                                              color: isHalfHour ? Colors.black38 : Colors.black26,
                                                               width: isHalfHour ? 1 * widget.scale : 0.5 * widget.scale,
                                                             ),
                                                           ),
