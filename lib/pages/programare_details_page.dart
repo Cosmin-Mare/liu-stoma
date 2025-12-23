@@ -21,7 +21,6 @@ class ProgramareDetailsPage extends StatefulWidget {
   final bool isConsultatie;
   final Function(String message, bool isSuccess)? onNotification;
   final DateTime? initialDateTime;
-
   const ProgramareDetailsPage({
     super.key,
     this.programare,
@@ -677,7 +676,7 @@ class _ProgramareDetailsPageState extends State<ProgramareDetailsPage> {
                 scale: widget.scale * 1.4,
                 onTap: () {
                   Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const PacientiPage(isSelectionPage: true)),
+                    MaterialPageRoute(builder: (context) => PacientiPage(isSelectionPage: true)),
                   ).then((result) {
                     if (result != null) {
                       setState(() {

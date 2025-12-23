@@ -154,6 +154,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                 return StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('patients')
+                  .where('clinicId', isEqualTo: PatientService.clinicId)
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {

@@ -18,7 +18,6 @@ class PatientDetailsPage extends StatefulWidget {
   final String? initialTelefon;
   final List<Programare> programari;
   final double scale;
-
   const PatientDetailsPage({
     super.key,
     this.patientName,
@@ -117,7 +116,6 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> with SingleTick
       final numeEmpty = _numeController.text.trim().isEmpty;
       final cnpProvided = _cnpController.text.trim().isNotEmpty;
       final telefonProvided = _telefonController.text.trim().isNotEmpty;
-      
       await patientRef.set({
         'nume': numeEmpty && !cnpProvided && !telefonProvided
             ? 'Pacient nou' 
@@ -127,6 +125,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> with SingleTick
         'email': _emailController.text.trim().isEmpty ? null : _emailController.text.trim(),
         'descriere': _descriereController.text.trim().isEmpty ? null : _descriereController.text.trim(),
         'programari': <dynamic>[],
+        'clinicId': PatientService.clinicId,
       });
       
       setState(() {

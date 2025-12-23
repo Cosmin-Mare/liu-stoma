@@ -17,6 +17,11 @@ class PatientServiceResult<T> {
 }
 
 class PatientService {
+  static String clinicId = '';
+  static Future<void> setClinicId(String clinicId) async {
+    PatientService.clinicId = clinicId;
+    print('Clinic ID set to: $clinicId');
+  }
   /// Capitalizes the first letter of each word in a string
   static String _capitalizeName(String name) {
     if (name.trim().isEmpty) return name;
@@ -326,10 +331,13 @@ class PatientService {
         'email': email?.trim().isEmpty ?? true ? null : email!.trim(),
         'descriere': descriere?.trim().isEmpty ?? true ? null : descriere!.trim(),
         'programari': <dynamic>[],
+        'clinicId': clinicId,
       });
+     
       
       return PatientServiceResult.success(patientRef.id);
     } catch (e) {
+      print(e);
       return PatientServiceResult.error('Eroare la adăugarea pacientului: $e');
     }
   }
@@ -345,12 +353,13 @@ class PatientService {
         return PatientServiceResult.success(null);
       }
 
-      final patientsRef = FirebaseFirestore.instance.collection('patients');
+      final patientsRef = FirebaseFirestore.instance.collection('patients').where('clinicId', isEqualTo: clinicId);
       
       // Try to find by CNP first
       if (cnp != null && cnp.trim().isNotEmpty) {
         final cnpQuery = await patientsRef
             .where('cnp', isEqualTo: cnp.trim())
+            .where('clinicId', isEqualTo: clinicId)
             .limit(1)
             .get();
         
@@ -363,6 +372,7 @@ class PatientService {
       if (telefon != null && telefon.trim().isNotEmpty) {
         final telefonQuery = await patientsRef
             .where('telefon', isEqualTo: telefon.trim())
+            .where('clinicId', isEqualTo: clinicId)
             .limit(1)
             .get();
         
@@ -401,6 +411,7 @@ class PatientService {
       print('[PatientService] Fetching all patients from Firestore...');
       final patientsSnapshot = await FirebaseFirestore.instance
           .collection('patients')
+          .where('clinicId', isEqualTo: clinicId)
           .get();
       
       print('[PatientService] Found ${patientsSnapshot.docs.length} patients');

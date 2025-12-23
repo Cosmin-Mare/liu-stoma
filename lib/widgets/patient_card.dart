@@ -48,6 +48,7 @@ class _PatientCardState extends State<PatientCard> {
     if (widget.programari.isNotEmpty) {
       final now = DateTime.now();
       final futureProgramari = widget.programari
+      
           .where(
             (p) => p.programareTimestamp.toDate().isAfter(now),
           )

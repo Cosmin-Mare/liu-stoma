@@ -8,7 +8,7 @@ import 'package:liu_stoma/widgets/patient_modal.dart';
 import 'package:liu_stoma/widgets/patient_search_bar.dart';
 import 'package:liu_stoma/pages/patient_details_page.dart';
 import 'package:liu_stoma/widgets/teeth_background.dart';
-import 'package:liu_stoma/widgets/welcome_title.dart';
+import 'package:liu_stoma/widgets/titles.dart';
 import 'package:liu_stoma/widgets/delete_patient_dialog.dart';
 import 'package:liu_stoma/widgets/add_programare_modal.dart';
 import 'package:liu_stoma/widgets/patient_long_press_menu.dart';
@@ -105,6 +105,7 @@ class _PacientiPageState extends State<PacientiPage> {
                     return StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('patients')
+                  .where('clinicId', isEqualTo: PatientService.clinicId)
                   .orderBy('nume')
                   .snapshots(),
               builder: (context, snapshot) {

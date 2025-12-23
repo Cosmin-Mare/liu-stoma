@@ -8,5 +8,9 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<key>keychain-access-groups</key>
+		<array>
+			<string>GFY9NF9JS4.com.cosmin.liuStoma</string>
+		</array>
 </dict>
 </plist>

@@ -10,6 +10,7 @@ class ModalSaveButton extends StatelessWidget {
   final VoidCallback onTapDown;
   final VoidCallback onTapUp;
   final VoidCallback onTapCancel;
+  final String text;
 
   const ModalSaveButton({
     super.key,
@@ -22,6 +23,7 @@ class ModalSaveButton extends StatelessWidget {
     required this.onTapDown,
     required this.onTapUp,
     required this.onTapCancel,
+    this.text = 'Salvează',
   });
 
   @override
@@ -67,7 +69,7 @@ class ModalSaveButton extends StatelessWidget {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
-                'Salvează',
+                text,
                 style: TextStyle(
                   fontSize: 32 * scale,
                   fontWeight: FontWeight.w900,
