@@ -642,6 +642,11 @@ class _PatientModalState extends State<PatientModal>
           showOverlapConfirmation: _showOverlapConfirmation,
           programareToEdit: _programareToEdit,
           programareToDelete: _programareToDelete,
+          onSetProgramareToDelete: (programare) {
+            setState(() {
+              _programareToDelete = programare;
+            });
+          },
           expiredProgramari: _expiredProgramari,
           pendingAddDateTime: _pendingAddDateTime,
           pendingAddProceduri: _pendingAddProceduri,

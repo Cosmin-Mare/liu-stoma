@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:liu_stoma/pacienti_page.dart';
-import 'package:liu_stoma/pages/login_page.dart';
 import 'package:liu_stoma/pages/programari_calendar_page.dart';
 import 'package:liu_stoma/services/patient_service.dart';
 import 'package:liu_stoma/utils/design_constants.dart';
@@ -31,6 +30,7 @@ class _MainPageState extends State<MainPage> {
   }
 
   Future<void> _getUserDoc() async {
+    if(!mounted) return;
     final userDoc = await FirebaseFirestore.instance
         .collection('users')
         .doc(uid)
@@ -45,11 +45,6 @@ class _MainPageState extends State<MainPage> {
 
   void _logout() async {
     await FirebaseAuth.instance.signOut();
-    Navigator.of(context).pushReplacement(
-      NavigationUtils.fadeScaleTransition(
-        page: LoginPage(),
-      ),
-    );
   }
 
 
@@ -118,7 +113,7 @@ class _MainPageState extends State<MainPage> {
                         horizontalPadding: buttonHorizontal,
                         verticalPadding: buttonVertical,
                         onPressed: () {
-                          Navigator.of(context).pushReplacement(
+                          Navigator.of(context).push(
                             NavigationUtils.fadeScaleTransition(
                               page: PacientiPage(),
                             ),
@@ -136,7 +131,7 @@ class _MainPageState extends State<MainPage> {
                           hoverColor: const Color(0xffFFA3FF),
                           pressedColor: const Color(0xffE066E6),
                           onPressed: () {
-                            Navigator.of(context).pushReplacement(
+                            Navigator.of(context).push(
                               NavigationUtils.fadeScaleTransition(
                                 page: ProgramariCalendarPage(),
                               ),
@@ -156,7 +151,7 @@ class _MainPageState extends State<MainPage> {
                       hoverColor: const Color(0xffFFA3FF),
                       pressedColor: const Color(0xffE066E6),
                       onPressed: () {
-                        Navigator.of(context).pushReplacement(
+                        Navigator.of(context).push(
                           NavigationUtils.fadeScaleTransition(
                             page: ProgramariCalendarPage(),
                           ),

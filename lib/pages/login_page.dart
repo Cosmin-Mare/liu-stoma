@@ -17,6 +17,8 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool isHovering = false;
+  bool isPressed = false;
 
   bool isLoading = false;
   String? errorMessage;
@@ -115,36 +117,74 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         SizedBox(height: 40 * scale),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            EditableField(
-                              label: 'Email',
-                              controller: emailController,
-                              scale: scale,
-                              keyboardType: TextInputType.emailAddress,
+                        Container(
+                          margin: EdgeInsets.symmetric(horizontal: 400 * scale),
+                          padding: EdgeInsets.symmetric(vertical: 20 * scale),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20 * scale),
+                            border: Border.all(
+                              color: Colors.black,
+                              width: 5 * scale,
                             ),
-                            SizedBox(width: 20 * scale),
-                            EditableField(
-                              label: 'Password',
-                              controller: passwordController,
-                              scale: scale,
-                              keyboardType: TextInputType.visiblePassword,
-                            ),
-                            if (!isMobile) SizedBox(width: 30 * scale),
-                            ModalSaveButton(
-                              scale: scale,
-                              onTap: isLoading ? () {} : _login,
-                              isHovering: false,
-                              isPressed: false,
-                              onHoverEnter: () {},
-                              onHoverExit: () {},
-                              onTapDown: () {},
-                              onTapUp: () {},
-                              onTapCancel: () {},
-                              text: isLoading ? 'Se autentifică...' : 'Login',
-                            ),
-                          ],
+                          ),
+                          child: 
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 20 * scale),
+                            child:
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  EditableField(
+                                    label: 'Email',
+                                    controller: emailController,
+                                    scale: scale,
+                                    keyboardType: TextInputType.emailAddress,
+                                  ),
+                                  SizedBox(width: 20 * scale),
+                                  EditableField(
+                                    obscureText: true,
+                                    label: 'Password',
+                                    controller: passwordController,
+                                    scale: scale,
+                                    keyboardType: TextInputType.visiblePassword,
+                                  ),
+                                  SizedBox(height: 20 * scale),
+                                  ModalSaveButton(
+                                    scale: scale,
+                                    onTap: isLoading ? () {} : _login,
+                                    isHovering: isHovering,
+                                    isPressed: isPressed,
+                                    onHoverEnter: () {
+                                      setState(() {
+                                        isHovering = true;
+                                      });
+                                    },
+                                    onHoverExit: () {
+                                      setState(() {
+                                        isHovering = false;
+                                      });
+                                    },
+                                    onTapDown: () {
+                                      setState(() {
+                                        isPressed = true;
+                                      });
+                                    },
+                                    onTapUp: () {
+                                      setState(() {
+                                        isPressed = false;
+                                      });
+                                    },
+                                    onTapCancel: () {
+                                      setState(() {
+                                        isPressed = false;
+                                      });
+                                    },
+                                    text: isLoading ? 'Se autentifică...' : 'Login',
+                                  ),
+                                ],
+                              ),
+                          ),
                         ),
                       ],
                     ),

@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:liu_stoma/services/patient_service.dart';
 
 class PatientFile {
   final String id;

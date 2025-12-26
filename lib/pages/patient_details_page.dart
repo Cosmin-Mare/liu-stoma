@@ -274,7 +274,7 @@ class _PatientDetailsPageState extends State<PatientDetailsPage> with SingleTick
     } else if (newPatientId != null) {
       // Navigate to the same page but with the new patient ID
       if (mounted) {
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => PatientDetailsPage(
               patientName: _numeController.text,

@@ -13,6 +13,11 @@ if (process.env.FUNCTIONS_EMULATOR === "true" || process.env.NODE_ENV !== "produ
   }
 }
 
+export const test = functions.https.onRequest((req, res) => {
+  res.send("ok");
+});
+
+
 admin.initializeApp();
 
 // Get Firestore instance to ensure it's initialized
@@ -33,7 +38,6 @@ function getTwilioClient() {
 }
 
 interface Programare {
-  programare_text: string;
   programare_timestamp: Timestamp;
   programare_notification: boolean;
 }
@@ -115,25 +119,28 @@ async function checkAndSendAppointmentNotifications(): Promise<void> {
   });
 
   console.log(
-    `Checking appointments between ${windowStartRomania} and ${windowEndRomania} (Romania time)`
+    `Checking appointments between ${windowStartRomania} and ${windowEndRomania} (plm time)`
   );
 
   // Get all patients
+  console.log("Getting all patients");
   const patientsSnapshot = await db.collection("patients").get();
+  console.log(patientsSnapshot.docs.length);
 
       const notificationsToSend: Array<{
         patientId: string;
         patientName: string;
         phone: string;
-        appointmentText: string;
         appointmentTime: Date;
         appointmentTimestamp: Timestamp;
       }> = [];
-
   // Check each patient's appointments
   for (const patientDoc of patientsSnapshot.docs) {
     const patientData = patientDoc.data() as Patient;
     const patientId = patientDoc.id;
+    console.log(patientData.nume);
+    console.log(patientData.programari);
+    console.log("________________________________________________________");
 
     if (!patientData.programari || !Array.isArray(patientData.programari)) {
       continue;
@@ -147,6 +154,13 @@ async function checkAndSendAppointmentNotifications(): Promise<void> {
       }
 
       const appointmentTime = programare.programare_timestamp;
+      console.log(windowStart.toDate())
+      console.log(windowEnd.toDate())
+      console.log(appointmentTime.toDate());
+      console.log(appointmentTime.toMillis() >= windowStart.toMillis());
+      console.log(appointmentTime.toMillis() <= windowEnd.toMillis());
+
+
 
       // Check if appointment is within our 4-hour window
       if (
@@ -168,7 +182,6 @@ async function checkAndSendAppointmentNotifications(): Promise<void> {
               patientId: patientId,
               patientName: patientData.nume,
               phone: patientData.telefon,
-              appointmentText: programare.programare_text,
               appointmentTime: appointmentTime.toDate(),
               appointmentTimestamp: appointmentTime,
             });
@@ -190,7 +203,6 @@ async function checkAndSendAppointmentNotifications(): Promise<void> {
 
       const message = createMessage(
         notification.patientName,
-        notification.appointmentText,
         notification.appointmentTime
       );
 
@@ -305,7 +317,6 @@ function formatPhoneNumber(phone: string): string | null {
  */
 function createMessage(
   patientName: string,
-  appointmentText: string,
   appointmentTime: Date
 ): string {
   const timeStr = appointmentTime.toLocaleString("ro-RO", {
@@ -317,7 +328,7 @@ function createMessage(
     timeZone: "Europe/Bucharest",
   });
 
-  return `Bună ${patientName}! Vă reamintim că aveți programare: ${appointmentText} pe data de ${timeStr}. Vă așteptăm!`;
+  return `Bună ${patientName}! Vă reamintim că aveți o programare pe data de ${timeStr}. Vă așteptăm!`;
 }
 
 /**
@@ -326,17 +337,24 @@ function createMessage(
 async function sendSMS(
   client: Twilio,
   phoneNumber: string,
-  message: string
-): Promise<void> {
-  const smsNumber = process.env.TWILIO_SMS_FROM;
-  if (!smsNumber) {
-    throw new Error("SMS number not configured. Set TWILIO_SMS_FROM secret.");
+  message: string,
+): Promise<boolean> {
+  try {
+    const smsNumber = process.env.TWILIO_SMS_FROM;
+    if (!smsNumber) {
+      throw new Error("SMS number not configured. Set TWILIO_SMS_FROM secret.");
+    }
+
+    await client.messages.create({
+      from: smsNumber,
+      to: phoneNumber,
+      body: message,
+    });
+  } catch (error) {
+    console.error(`Failed to send SMS to ${phoneNumber}:`, error);
+    return false;
   }
 
-  await client.messages.create({
-    from: smsNumber,
-    to: phoneNumber,
-    body: message,
-  });
+  return true;
 }
 

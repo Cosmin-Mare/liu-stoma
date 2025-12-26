@@ -11,7 +11,7 @@ class EditableField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final FocusNode? focusNode;
   final TextCapitalization textCapitalization;
-
+  final bool obscureText;
   const EditableField({
     super.key,
     required this.label,
@@ -23,6 +23,7 @@ class EditableField extends StatelessWidget {
     this.onChanged,
     this.focusNode,
     this.textCapitalization = TextCapitalization.none,
+    this.obscureText = false,
   });
 
   @override
@@ -56,6 +57,7 @@ class EditableField extends StatelessWidget {
             ),
           ),
           child: TextField(
+            obscureText: obscureText,
             controller: controller,
             focusNode: focusNode,
             keyboardType: keyboardType,

@@ -21,6 +21,7 @@ class PatientModalOverlays extends StatelessWidget {
   final bool showOverlapConfirmation;
   final Programare? programareToEdit;
   final Programare? programareToDelete;
+  final Function(Programare) onSetProgramareToDelete;
   final List<Programare> expiredProgramari;
   final DateTime? pendingAddDateTime;
   final List<Procedura>? pendingAddProceduri;
@@ -63,6 +64,7 @@ class PatientModalOverlays extends StatelessWidget {
     required this.showOverlapConfirmation,
     this.programareToEdit,
     this.programareToDelete,
+    required this.onSetProgramareToDelete,
     required this.expiredProgramari,
     this.pendingAddDateTime,
     this.pendingAddProceduri,
@@ -143,7 +145,7 @@ class PatientModalOverlays extends StatelessWidget {
             scale: scale,
             expiredProgramari: expiredProgramari,
             onEdit: onEditProgramare,
-            onDelete: onDeleteProgramare,
+            onDelete: onSetProgramareToDelete,
             onClose: onCloseHistoryModal,
             onAddConsultation: onAddConsultation,
           ),

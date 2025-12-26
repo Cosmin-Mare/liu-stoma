@@ -194,6 +194,7 @@ class PatientService {
       
       for (int i = 0; i < currentProgramari.length; i++) {
         final item = currentProgramari[i];
+        print(currentProgramari);
         if (item is Map<String, dynamic>) {
           final itemTimestamp = item['programare_timestamp'] as Timestamp?;
           final itemDurataRaw = item['durata'];
@@ -208,6 +209,8 @@ class PatientService {
           // New format with proceduri
           if (item['proceduri'] != null) {
             final itemProceduri = item['proceduri'] as List<dynamic>;
+            print(itemProceduri);
+            print(oldProgramare.proceduri);
             if (itemProceduri.length == oldProgramare.proceduri.length) {
               matches = true;
               for (int j = 0; j < itemProceduri.length && matches; j++) {

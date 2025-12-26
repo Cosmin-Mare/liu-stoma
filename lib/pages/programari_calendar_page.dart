@@ -217,7 +217,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                           children: [
                             AnimatedBackButton(
                               onTap: () {
-                                Navigator.of(context).pushReplacement(
+                                Navigator.of(context).push(
                                   NavigationUtils.fadeScaleTransition(
                                     page: const MainApp(),
                                   ),
@@ -298,7 +298,7 @@ class _ProgramariCalendarPageState extends State<ProgramariCalendarPage> {
                           children: [
                             AnimatedBackButton(
                               onTap: () {
-                                Navigator.of(context).pushReplacement(
+                                Navigator.of(context).push(
                                   NavigationUtils.fadeScaleTransition(
                                     page: const MainApp(),
                                   ),

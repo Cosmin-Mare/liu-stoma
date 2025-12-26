@@ -125,7 +125,7 @@ class _PacientiPageState extends State<PacientiPage> {
                               if (widget.isSelectionPage != null) {
                                 Navigator.of(context).pop(null);
                               } else {
-                                Navigator.of(context).pushReplacement(
+                                Navigator.of(context).push(
                                   NavigationUtils.fadeScaleTransition(
                                     page: const MainApp(),
                                   ),
