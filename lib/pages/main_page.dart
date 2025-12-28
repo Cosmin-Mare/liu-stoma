@@ -83,12 +83,12 @@ class _MainPageState extends State<MainPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  AnimatedBackButton(
-                    scale: scale,
-                    onTap: () {
-                      _logout();
-                    },
-                  ),
+                  // AnimatedBackButton(
+                  //   scale: scale,
+                  //   onTap: () {
+                  //     _logout();
+                  //   },
+                  // ),
                   Center(
                     child: Padding(
                       padding: EdgeInsets.symmetric(

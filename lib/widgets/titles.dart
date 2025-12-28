@@ -24,7 +24,7 @@ class WelcomeTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const _GradientOutlinedText(
-      text: 'Welcome, Liu!',
+      text: 'Welcome!',
     );
   }
 }

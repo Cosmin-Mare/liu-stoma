@@ -419,10 +419,19 @@ class PatientService {
       
       print('[PatientService] Found ${patientsSnapshot.docs.length} patients');
 
+      print(patientsSnapshot);
+      print(patientsSnapshot.docs);
       int totalAppointmentsChecked = 0;
       // Check all appointments from all patients
       for (var patientDoc in patientsSnapshot.docs) {
-        final patientData = patientDoc.data();
+        print(patientDoc);
+        Map<String, dynamic> patientData;
+        try{
+          patientData = patientDoc.data() as Map<String, dynamic>;
+        } catch (e) {
+          print('[PatientService] ERROR in checkOverlapWithAllAppointments: $e');
+          continue;
+        }
         final programari = PatientParser.parseProgramari(patientData);
         final patientId = patientDoc.id;
         
@@ -432,14 +441,19 @@ class PatientService {
           totalAppointmentsChecked++;
           
           // Skip the appointment being edited (if provided)
-          if (excludePatientId != null && excludeProgramare != null &&
+          print(programare.programareTimestamp);
+          print(excludeProgramare != null);
+          if(excludeProgramare != null){
+            if (
+              excludePatientId != null && 
               patientId == excludePatientId &&
               programare.programareTimestamp == excludeProgramare.programareTimestamp &&
-              programare.displayText == excludeProgramare.displayText) {
-            print('[PatientService] Skipping excluded appointment: ${programare.displayText}');
-            continue;
+              programare.displayText == excludeProgramare.displayText
+              ) {
+                print('[PatientService] Skipping excluded appointment: ${programare.displayText}');
+                continue;
+              }
           }
-
           final programareDate = programare.programareTimestamp.toDate();
           final programareDay = DateTime(
             programareDate.year,
